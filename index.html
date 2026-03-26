@@ -1,0 +1,3488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presupuesto 2026 — Colegio Ssmo. Rosario</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+  import { getFirestore, doc, setDoc, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcSapL9kW3wqmUlvjUtMNDT5DK_0yNwf8",
+    authDomain: "csc-agenda-estrategica.firebaseapp.com",
+    projectId: "csc-agenda-estrategica",
+    storageBucket: "csc-agenda-estrategica.firebasestorage.app",
+    messagingSenderId: "550972493263",
+    appId: "1:550972493263:web:fbaa9c3b9ad81a9691d6ba",
+    measurementId: "G-LQ76RZF15Y"
+  };
+
+  const app       = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db        = getFirestore(app);
+  // Colección separada para Colegio Ssmo. Rosario (distinta de presupuesto CSC)
+  const DOC = doc(db, 'presupuesto_csr', '2026');
+
+  const HTML_VERSION = 1;
+  window._getHtmlVersion = () => HTML_VERSION;
+
+  const MY_TAB = Math.random().toString(36).slice(2);
+
+  window._fbSave = async (estado) => {
+    await setDoc(DOC, { ...estado, _tab: MY_TAB, _reload: false });
+  };
+
+  window._fbForceSync = async () => {
+    if (!window._fbSave) return;
+    const estado = capturarEstado();
+    await setDoc(DOC, { ...estado, _tab: MY_TAB, _reload: true });
+  };
+
+  let _firstLoad = true;
+  onSnapshot(DOC, snap => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    if (!data || !data.v) return;
+
+    if (data._tab === MY_TAB) {
+      if (typeof setSyncStatus === 'function') setSyncStatus('live');
+      return;
+    }
+
+    if (data._reload === true && !_firstLoad) {
+      setTimeout(() => location.reload(), 300);
+      return;
+    }
+
+    if (_firstLoad) {
+      _firstLoad = false;
+      const fbVersion = data._htmlVersion || 1;
+      setTimeout(() => {
+        if (fbVersion < HTML_VERSION) {
+          if (typeof mostrarAvisoVersionAnterior === 'function')
+            mostrarAvisoVersionAnterior(data);
+        } else {
+          if (typeof aplicarEstado === 'function') {
+            window._applying = true;
+            aplicarEstado(data);
+            setTimeout(() => {
+              window._applying = false;
+              if (typeof setSyncStatus === 'function') setSyncStatus('live');
+            }, 1200);
+          }
+        }
+        window._appReady = true;
+        if (typeof setSyncStatus === 'function') setSyncStatus('live');
+      }, 400);
+      return;
+    }
+
+    if (!window._appReady || window._applying) return;
+    window._applying = true;
+    if (typeof aplicarEstado === 'function') aplicarEstado(data);
+    setTimeout(() => {
+      window._applying = false;
+      if (typeof setSyncStatus === 'function') setSyncStatus('live');
+    }, 1200);
+
+  }, err => {
+    console.error('Firebase error:', err);
+    if (typeof setSyncStatus === 'function') setSyncStatus('error');
+  });
+</script>
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FDFCF9;
+  --surface2: #F0EDE6;
+  --border: #DDD9CF;
+  --border2: #C8C3B5;
+  --text: #1A1815;
+  --text2: #6B6558;
+  --text3: #A09B8E;
+  --accent: #2D5A3D;
+  --accent-lt: #E8F0EB;
+  --danger: #8B2E2E;
+  --danger-lt: #F5E8E8;
+  --warn: #7A5C1A;
+  --warn-lt: #F7F0E0;
+  --info: #1A3D5A;
+  --info-lt: #E4EDF5;
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: var(--text);
+  color: var(--bg);
+  padding: 18px 28px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.header span {
+  font-size: 11px;
+  color: #9B9589;
+  letter-spacing: .06em;
+}
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #9B9589;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4A9E6A;
+  display: inline-block;
+}
+
+/* LAYOUT */
+.shell {
+  display: flex;
+  min-height: calc(100vh - 57px);
+}
+
+/* SIDEBAR NAV */
+.nav {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  position: sticky;
+  top: 57px;
+  height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+.nav-section {
+  padding: 0 12px;
+  margin-bottom: 20px;
+}
+.nav-label {
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--text3);
+  text-transform: uppercase;
+  padding: 0 4px;
+  margin-bottom: 4px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text2);
+  transition: all .12s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--text); color: var(--bg); }
+.nav-item .icon {
+  width: 16px; text-align: center;
+  font-size: 13px; flex-shrink: 0;
+}
+.nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 12px;
+}
+
+/* MAIN CONTENT */
+.main {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-x: hidden;
+}
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* PAGE TITLE */
+.page-title {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.page-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* METRIC CARDS */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+}
+.metric .mlabel {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: .03em;
+  margin-bottom: 6px;
+}
+.metric .mval {
+  font-size: 18px;
+  font-weight: 500;
+  font-family: 'Fraunces', serif;
+  color: var(--text);
+}
+.metric .mval.pos { color: var(--accent); }
+.metric .mval.neg { color: var(--danger); }
+
+/* SECTION */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.section-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 11px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text2);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-body { padding: 16px; }
+
+/* FORM GRID */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: .02em;
+}
+.field input, .field select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  transition: border-color .12s;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--border2);
+  background: var(--surface);
+}
+.field input[readonly] { color: var(--text3); background: var(--surface2); }
+
+/* TABLES */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 10.5px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  font-weight: 500;
+}
+thead th.r { text-align: right; }
+tbody td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text);
+}
+tbody td.r { text-align: right; }
+tbody td.muted { color: var(--text3); font-size: 12px; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+tbody td input {
+  border: none;
+  background: transparent;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--text);
+  text-align: right;
+  width: 100%;
+  padding: 1px 2px;
+}
+tbody td input:focus {
+  outline: 1px solid var(--border2);
+  border-radius: 3px;
+  background: var(--surface);
+}
+tr.row-sub td { background: var(--surface2); font-weight: 500; }
+tr.row-total td {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 500;
+}
+tr.row-group td {
+  background: var(--accent-lt);
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+}
+
+/* TOTAL BAR */
+.total-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  font-size: 12.5px;
+}
+.total-bar strong { font-weight: 500; }
+
+/* BADGE */
+.badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .02em;
+}
+.badge-ok { background: var(--accent-lt); color: var(--accent); }
+.badge-warn { background: var(--warn-lt); color: var(--warn); }
+.badge-bad { background: var(--danger-lt); color: var(--danger); }
+.badge-info { background: var(--info-lt); color: var(--info); }
+
+/* BUTTONS */
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .12s;
+}
+.btn:hover { background: var(--surface2); border-color: var(--text); }
+.btn-dark {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+.btn-dark:hover { background: #333; }
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.btn-accent:hover { opacity: .85; }
+
+.actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+/* RESUMEN ESPECIAL */
+.resumen-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.resumen-line:last-child { border-bottom: none; }
+.resumen-line.total {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 500;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+}
+.resumen-line.subtot {
+  background: var(--surface2);
+  font-weight: 500;
+}
+
+/* NOTAS */
+.nota {
+  font-size: 11.5px;
+  color: var(--text3);
+  background: var(--surface2);
+  border-left: 2px solid var(--border2);
+  padding: 8px 12px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+/* INCREMENTO */
+.inc-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--warn-lt);
+  border: 1px solid #DDCB8A;
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: var(--warn);
+  flex-wrap: wrap;
+}
+.inc-bar input {
+  width: 70px;
+  padding: 5px 8px;
+  border: 1px solid #DDCB8A;
+  border-radius: var(--radius);
+  background: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--warn);
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 11px;
+  color: var(--text3);
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+
+/* RESPONSABLE BADGE */
+.resp-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.resp-badge .resp-label { color: var(--text3); }
+.resp-badge .resp-name {
+  cursor: text;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: var(--accent-lt);
+  color: var(--accent);
+  font-weight: 500;
+  min-width: 90px;
+  text-align: center;
+  transition: background .12s;
+}
+.resp-badge .resp-name:hover { background: #d4e8d9; }
+.resp-badge .resp-name.empty { color: var(--text3); background: var(--surface2); font-style: italic; }
+.resp-badge input.resp-inp {
+  display: none;
+  padding: 2px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  width: 150px;
+  text-align: center;
+  outline: none;
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+@keyframes pulse-orange {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* PRINT */
+@page { size: A4 portrait; margin: 1.2cm 1.0cm; }
+@page landscape { size: A4 landscape; margin: 0.7cm 0.8cm; }
+
+@media print {
+  /* ── Ocultar elementos de UI ── */
+  .nav,
+  .header .header-right,
+  .btn, .actions,
+  .inc-bar,
+  button,
+  input[type="number"],
+  input[type="hidden"] { display: none !important; }
+
+  /* ── Layout base ── */
+  body { font-size: 11px; background: white !important; color: #1A1815 !important; }
+  .shell { display: block !important; }
+  .main { padding: 0 !important; overflow: visible !important; }
+  .header { position: static !important; padding: 8px 0 6px; margin-bottom: 4px; border-bottom: 1px solid #ccc; }
+  .header h1 { font-size: 15px; }
+  .header span { font-size: 10px; }
+
+  /* ── Mostrar todos los paneles ── */
+  .panel { display: block !important; page-break-after: always; break-after: page; }
+  .panel:last-child { page-break-after: avoid; break-after: avoid; }
+
+  /* ── Cuotas: landscape, todo en una sola página ── */
+  #tab-cuotas { page: landscape; }
+  #tab-cuotas .section { page-break-inside: avoid !important; break-inside: avoid !important; overflow: visible !important; }
+  #tab-cuotas .table-wrap { overflow: visible !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+  #tab-cuotas table { font-size: 8px; page-break-inside: avoid !important; break-inside: avoid !important; width: 100%; table-layout: fixed; }
+  #tab-cuotas thead { display: table-header-group; }
+  #tab-cuotas tfoot { display: table-footer-group; }
+  #tab-cuotas thead th { padding: 3px 3px; font-size: 7.5px; white-space: nowrap; overflow: hidden; }
+  #tab-cuotas tbody td { padding: 2px 3px; font-size: 8px; }
+  #tab-cuotas tfoot td { padding: 2px 3px; font-size: 8px; }
+  /* Fila total bruto */
+  #tab-cuotas tfoot tr td { font-size: 8px !important; }
+  /* Barra totalbar debajo de tabla */
+  #tab-cuotas .total-bar { font-size: 8px; flex-wrap: wrap; gap: 4px; padding: 4px 8px; page-break-inside: avoid; break-inside: avoid; }
+  /* Métricas resumen */
+  #tab-cuotas .metrics { page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 6px; }
+  #tab-cuotas .metric { padding: 6px 8px; }
+  #tab-cuotas .metric .mval { font-size: 11px; }
+  /* Ocultar barra de % actualización en print — solo labels de meses no hace falta verlos */
+  #tab-cuotas > .section > div:first-child { display: none !important; }
+  /* Ocultar botón agregar nivel y campo becas */
+  #tab-cuotas > div:nth-child(4) { display: none !important; }
+
+  /* ── Egresos: mantener título con el contenido ── */
+  #tab-egresos .page-title,
+  #tab-egresos .page-sub { page-break-after: avoid !important; break-after: avoid !important; }
+  #tab-egresos .section { page-break-before: avoid !important; break-before: avoid !important; }
+
+  /* ── Secciones ── */
+  .section { overflow: visible !important; page-break-inside: avoid; break-inside: avoid; margin-bottom: 10px; border: 0.5px solid #ccc; }
+  .section-head { background: #F0EDE6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .table-wrap { overflow: visible !important; }
+
+  /* ── Campos formateados: mostrar el span, ocultar input ── */
+  [id$="-disp"] { display: inline !important; }
+  span[id$="-disp"] { cursor: default; }
+  .field > div > span[id$="-disp"] { border: none !important; background: transparent !important; }
+
+  /* ── Valores en campos de inicio: mostrar display, ocultar input ── */
+  .form-grid .field > div { border: 0.5px solid #ddd; border-radius: 4px; }
+
+  /* ── Métricas ── */
+  .metrics { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; margin-bottom: 10px; }
+  .metric { border: 0.5px solid #ccc; padding: 8px 10px; }
+  .metric .mval { font-size: 14px; }
+
+  /* ── Acordeón: expandir todo ── */
+  tr.acc-item.hidden { display: table-row !important; }
+  tr.acc-item td { padding-left: 20px !important; }
+  tr.acc-group { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  tr.acc-group td { background: #1A1815 !important; color: #F5F3EE !important; font-size: 9.5px !important; padding: 5px 10px !important; }
+
+  /* ── Tablas generales ── */
+  table { font-size: 10px; }
+  thead th { font-size: 9px; padding: 4px 8px; border-bottom: 1px solid #ccc; }
+  tbody td { padding: 4px 8px; border-bottom: 0.5px solid #eee; }
+  tr.row-sub td { background: #F0EDE6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  tr.row-total td { background: #1A1815 !important; color: #F5F3EE !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* ── Estado de Resultado (Unidades) ── */
+  .er-table td { padding: 5px 10px; font-size: 10px; }
+  .er-table .er-group { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #F0EDE6 !important; }
+  .er-table .er-total td { background: #1A1815 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .er-table .er-sub td { background: #E4EDF5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .er-unit-title { font-size: 14px; margin: 8px 0 4px; }
+
+  /* ── Resumen: líneas ── */
+  .resumen-line { padding: 6px 12px; font-size: 11px; }
+  .resumen-line.total { background: #1A1815 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .resumen-line.subtot { background: #F0EDE6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* ── Notas: contenteditable como texto ── */
+  #notas {
+    border: none !important;
+    background: transparent !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    font-size: 10.5px !important;
+    line-height: 1.8 !important;
+    padding: 0 !important;
+  }
+
+  /* ── Total bars ── */
+  .total-bar { background: #F0EDE6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 10px; }
+
+  /* ── Títulos de página ── */
+  .page-title { font-size: 18px; margin-bottom: 4px; }
+  .page-sub { font-size: 9px; margin-bottom: 8px; }
+
+  /* ── Ocultar paneles vacíos alias ── */
+  #tab-estacionamiento, #tab-cantina { display: none !important; }
+
+  /* ── Inversiones: input mostrar valor ── */
+  #inv-body span[id^="inv-pu-disp"] { display: inline !important; }
+}
+/* cuota month cols — compact */
+#tab-cuotas td.muted { font-size: 11.5px; padding: 6px 8px; }
+#tab-cuotas thead th { padding: 7px 8px; font-size: 10px; }
+#tab-cuotas tbody td { padding: 5px 8px; }
+/* ACCORDION */
+tr.acc-group {
+  cursor: pointer;
+  user-select: none;
+}
+tr.acc-group:hover td { background: #2a2724 !important; color: var(--bg) !important; }
+tr.acc-group td {
+  background: var(--text) !important;
+  color: var(--bg) !important;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: .04em;
+  padding: 9px 14px !important;
+}
+tr.acc-group td .toggle-icon {
+  display: inline-block;
+  width: 14px;
+  transition: transform .15s;
+  font-style: normal;
+  font-size: 10px;
+  margin-right: 6px;
+}
+tr.acc-group.open td .toggle-icon { transform: rotate(90deg); }
+tr.acc-item { transition: opacity .1s; }
+tr.acc-item.hidden { display: none; }
+tr.acc-item td { padding-left: 28px !important; }
+tr.acc-subtotal td {
+  background: var(--surface2);
+  font-weight: 500;
+  font-size: 12.5px;
+  border-top: 1px solid var(--border2);
+}
+/* ESTADO RESULTADO */
+.er-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.er-table td { padding: 9px 16px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+.er-table .er-group { background: var(--surface2); font-weight: 500; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text2); padding: 7px 16px; }
+.er-table .er-label { color: var(--text2); font-size: 12.5px; }
+.er-table .er-val { text-align: right; font-weight: 500; white-space: nowrap; }
+.er-table .er-pos { color: var(--accent); }
+.er-table .er-neg { color: var(--danger); }
+.er-table .er-sub td { background: var(--info-lt); font-weight: 500; }
+.er-table .er-total td { background: var(--text); color: var(--bg); font-weight: 500; font-size: 14px; }
+.er-unit-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 300; margin: 20px 0 8px; color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <div style="font-size:10px;color:#666;letter-spacing:.08em;text-transform:uppercase">Sistema de Gestión Presupuestaria · Colegios</div>
+    <h1 id="nombre-colegio-disp" style="cursor:text" onclick="editNombre()" title="Clic para editar">Colegio Ssmo. Rosario</h1>
+    <input id="nombre-colegio-inp" type="text" value="Colegio Ssmo. Rosario" style="display:none;font-family:'Fraunces',serif;font-size:20px;font-weight:300;background:transparent;border:none;border-bottom:1px solid #666;color:var(--bg);outline:none;width:320px" onblur="cerrarNombre()" onkeydown="if(event.key==='Enter')this.blur()">
+  </div>
+  <span id="header-periodo">PRESUPUESTO 2026 · PERÍODO MAR 2026 – FEB 2027</span>
+  <div class="header-right">
+    <span class="status-dot"></span>
+    <span id="last-saved" style="font-size:11px;color:var(--text3)">conectando...</span>
+    <span id="sync-status" style="font-size:11px;padding:3px 10px;border-radius:12px;background:#e8f5e9;color:#2e7d32;font-weight:500;display:inline-flex;align-items:center;gap:5px">
+      <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:#4caf50;display:inline-block;animation:pulse-green 2s infinite"></span>
+      <span id="sync-text">conectando...</span>
+    </span>
+
+    <button class="btn" onclick="forzarSincronizacion()" style="padding:5px 14px;font-size:11px;background:#2D5A3D;color:#fff;border-color:#2D5A3D;font-weight:600" title="Guarda y fuerza recarga en todos los dispositivos">🔄 sincronizar</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:#4A9E6A;border-color:#4A9E6A" onclick="guardarEstado()">💾 backup</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:#6A9EC4;border-color:#6A9EC4" onclick="$('cargar-inp').click()">📂 restaurar</button>
+    <input type="file" id="cargar-inp" accept=".json" style="display:none" onchange="cargarEstado(event)">
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:var(--bg);border-color:#555" onclick="exportarCSV()">↓ CSV</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:var(--bg);border-color:#555" onclick="imprimirApp()">imprimir</button>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-label">Inicio</div>
+      <button class="nav-item active" onclick="goTab('inicio',this)">
+        <span class="icon">◈</span> Posición Inicial
+      </button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Ingresos</div>
+      <button class="nav-item" onclick="goTab('cuotas',this)">
+        <span class="icon">◇</span> Cuota y Matrí.
+      </button>
+      <button class="nav-item" onclick="goTab('recursos',this)">
+        <span class="icon">◇</span> Ingresos
+      </button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Egresos</div>
+      <button class="nav-item" onclick="goTab('egresos',this)">
+        <span class="icon">◇</span> Egresos
+      </button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Unidades</div>
+      <button class="nav-item" onclick="goTab('uniformes',this)">
+        <span class="icon">◇</span> Unidades de Negocio
+      </button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Capital</div>
+      <button class="nav-item" onclick="goTab('inversiones',this)">
+        <span class="icon">◇</span> Inversiones
+      </button>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <button class="nav-item" onclick="goTab('resumen',this)" style="color:var(--accent);font-weight:500">
+        <span class="icon">■</span> Resumen Final
+      </button>
+      <button class="nav-item" onclick="goTab('pe',this)" style="color:var(--info);font-weight:500">
+        <span class="icon">◉</span> Punto de Equilibrio
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ═══════════════════════════════ INICIO ═══════════════════════════════ -->
+    <div class="panel active" id="tab-inicio">
+      <div class="page-title">Posición Financiera al Inicio</div>
+      <p class="page-sub">Saldos al 01/03/2026. Los valores precargados corresponden al cierre del ejercicio 2025.</p>
+
+      <div class="metrics" id="met-inicio"></div>
+
+      <div class="section">
+        <div class="section-head">◈ Activo Corriente <span id="resp-activo-wrap"></span></div>
+        <div class="section-body">
+          <div class="form-grid" id="ac-grid"></div>
+        </div>
+        <div class="total-bar"><span>Total Activo Corriente</span><strong id="tot-ac">—</strong></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">◈ Pasivo Corriente <span id="resp-pasivo-wrap"></span></div>
+        <div class="section-body">
+          <div class="form-grid" id="pc-grid"></div>
+        </div>
+        <div class="total-bar"><span>Total Pasivo Corriente</span><strong id="tot-pc">—</strong></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ CUOTAS ═══════════════════════════════ -->
+    <div class="panel" id="tab-cuotas">
+      <div class="page-title">Cuota y Matrícula</div>
+      <p class="page-sub">Definí los niveles, alumnos, cuota base y los porcentajes de actualización por mes. La matrícula se calcula automáticamente como 2× la cuota de diciembre. Los totales fluyen a Recursos.</p>
+
+      <div class="section">
+        <div class="section-head">◈ Tabla de Cuotas por Nivel — con actualización mensual inline <span id="resp-cuotas-wrap"></span></div>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:var(--warn-lt);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--warn);font-weight:500">% Actualización por mes →</span>
+          <span style="font-size:11px;color:var(--text3)">Mar</span>
+          <input type="number" id="aumMar" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Abr</span>
+          <input type="number" id="aumAbr" value="11" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">May</span>
+          <input type="number" id="aumMay" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Jun</span>
+          <input type="number" id="aumJun" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Jul</span>
+          <input type="number" id="aumJul" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Ago</span>
+          <input type="number" id="aumAgo" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Sep</span>
+          <input type="number" id="aumSep" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Oct</span>
+          <input type="number" id="aumOct" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Nov</span>
+          <input type="number" id="aumNov" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <span style="font-size:11px;color:var(--text3)">Dic</span>
+          <input type="number" id="aumDic" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr id="cuota-thead">
+                <th>Nivel</th><th class="r">Alum.</th><th class="r">Cuota Base</th><th class="r" style="color:var(--warn)">Complejo</th>
+                <th class="r">Mar</th><th class="r">Abr</th><th class="r">May</th><th class="r">Jun</th>
+                <th class="r">Jul</th><th class="r">Ago</th><th class="r">Sep</th><th class="r">Oct</th>
+                <th class="r">Nov</th><th class="r">Dic</th><th class="r" style="background:var(--info-lt);color:var(--info)">Matrícula</th>
+                <th class="r">Total Mens.</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="cuota-body"></tbody>
+            <tfoot id="cuota-foot"></tfoot>
+          </table>
+        </div>
+        <div class="total-bar" style="justify-content:space-between;gap:16px;flex-wrap:wrap" id="cuota-totalbar"><span>—</span></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
+        <button class="btn" onclick="addNivel()">+ agregar nivel</button>
+        <div class="field" style="flex-direction:row;align-items:center;gap:8px;margin:0">
+          <label style="font-size:11px;white-space:nowrap">% Becas / Desc.:</label>
+          <input type="number" id="pBeca" value="2.57" oninput="calcCuotas()" style="width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-family:'DM Mono',monospace;font-size:12px">
+          <span style="font-size:11px;color:var(--text3)">%</span>
+        </div>
+      </div>
+
+      <div class="metrics" id="met-cuotas"></div>
+    </div>
+
+    <!-- ═══════════════════════════════ RECURSOS ═══════════════════════════════ -->
+    <div class="panel" id="tab-recursos">
+      <div style="page-break-inside:avoid;break-inside:avoid">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+        <div class="page-title" style="margin-bottom:0">Recursos Operativos</div>
+        <div id="resp-recursos-wrap"></div>
+      </div>
+      <p class="page-sub">Hacé clic en cada rubro para expandir las cuentas. Los valores de referencia corresponden al ejercicio 2025 real.</p>
+
+      <div class="inc-bar">
+        <span>Incremento general recursos:</span>
+        <input type="number" id="inc-rec" value="20">
+        <span>%</span>
+        <button class="btn" style="margin-left:8px;border-color:#DDCB8A;color:var(--warn);font-size:11px;padding:5px 12px" onclick="aplicarIncRec()">aplicar a todos</button>
+      </div>
+      <div class="section">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36%">Concepto</th><th class="r">Referencia 2025</th><th class="r">% Inc.</th><th class="r">Presupuesto 2026</th><th class="r">Variación</th>
+              </tr>
+            </thead>
+            <tbody id="rec-body"></tbody>
+          </table>
+        </div>
+        <div class="total-bar"><span>Total Recursos Operativos</span><strong id="rec-total">—</strong></div>
+      </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ EGRESOS ═══════════════════════════════ -->
+    <div class="panel" id="tab-egresos">
+      <div style="page-break-inside:avoid;break-inside:avoid">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+        <div class="page-title" style="margin-bottom:0">Egresos Operativos</div>
+        <div id="resp-egresos-wrap"></div>
+      </div>
+      <p class="page-sub">Hacé clic en cada rubro para expandir las cuentas. Aplicá un incremento porcentual para ajustar desde los valores de referencia.</p>
+
+      <div class="inc-bar">
+        <span>Incremento salarial:</span>
+        <input type="number" id="inc-sal" value="25">
+        <span>%</span>
+        <span style="margin-left:8px">Gastos operativos:</span>
+        <input type="number" id="inc-gas" value="30">
+        <span>%</span>
+        <button class="btn" style="margin-left:8px;border-color:#DDCB8A;color:var(--warn);font-size:11px;padding:5px 12px" onclick="aplicarInc()">aplicar a todos</button>
+      </div>
+
+      <div class="section">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36%">Concepto</th>
+                <th class="r">Referencia</th>
+                <th class="r">% Inc.</th>
+                <th class="r">Presupuesto 2026</th>
+                <th class="r">Variación</th>
+              </tr>
+            </thead>
+            <tbody id="egr-body"></tbody>
+          </table>
+        </div>
+        <div class="total-bar">
+          <span>Total Egresos 2026</span>
+          <strong id="egr-total">—</strong>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ UNIDADES DE NEGOCIO ═══════════════════════════════ -->
+    <div class="panel" id="tab-uniformes">
+      <div class="page-title">Unidades de Negocio — Estado de Resultado</div>
+      <p class="page-sub">Los ingresos y egresos operativos se toman automáticamente de las pestañas Recursos y Egresos (cuentas 414 y 514). Podés ajustar costos propios de cada unidad debajo.</p>
+      <div id="unidades-er-content"></div>
+    </div>
+
+    <!-- Paneles alias para mantener la nav -->
+    <div class="panel" id="tab-estacionamiento"></div>
+    <div class="panel" id="tab-cantina"></div>
+
+    <!-- ═══════════════════════════════ INVERSIONES ═══════════════════════════════ -->
+    <div class="panel" id="tab-inversiones">
+      <div class="page-title">Inversiones y Bienes de Uso</div>
+      <p class="page-sub">Compras de activos fijos, obras y mejoras edilicias del período 2026.</p>
+
+      <div class="section">
+        <div class="section-head">◈ Detalle de Inversiones <span id="resp-inversiones-wrap"></span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Descripción</th><th>Categoría</th><th class="r">Cant.</th><th class="r">P. Unitario</th><th class="r">Total</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="inv-body"></tbody>
+          </table>
+        </div>
+        <div class="total-bar"><span>Total Inversiones</span><strong id="inv-total">$0</strong></div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="addInv()">+ agregar ítem</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ RESUMEN ═══════════════════════════════ -->
+    <div class="panel" id="tab-resumen">
+      <div class="page-title">Cuadro Resumen — Posición Financiera 2026</div>
+      <p class="page-sub">Síntesis del período. Se actualiza automáticamente con todos los datos ingresados.</p>
+
+      <div class="metrics" id="met-resumen"></div>
+
+      <div class="section">
+        <div class="section-head">◈ Estado de Resultados y Posición Financiera</div>
+        <div id="resumen-lines"></div>
+      </div>
+
+      <div class="section" style="margin-top:14px">
+        <div class="section-head">◈ Análisis de Reservas Sugeridas</div>
+        <div class="section-body">
+          <div id="reservas-grid"></div>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:14px">
+        <div class="section-head">◈ Notas al Presupuesto</div>
+        <div class="section-body">
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="field">
+              <label>Notas adicionales (metodología, supuestos, aclaraciones)</label>
+              <div id="notas" contenteditable="true" style="padding:10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-family:'DM Mono',monospace;font-size:12px;color:var(--text);min-height:140px;line-height:1.8;white-space:pre-wrap;outline:none">Presupuesto confeccionado: Marzo 2026
+Período: 01/03/2026 al 28/02/2027
+Sistema: Devengado
+
+REFERENCIA 2025
+- Los valores de referencia corresponden al Balance de Sumas y Saldos al 28/02/2026.
+- Ejercicio completo Mar 2025 – Feb 2026.
+
+INGRESOS
+- Aportes Estatales: Informados con incremento estimado según aumentos conocidos.
+- Mensualidades: Base alumnos 2026 con ajustes según pauta acordada.
+- Matrículas: Devengamiento calculado por sistema de gestión.
+
+EGRESOS
+- Sueldos: Informados con el incremento estimado según pautas vigentes.
+- Indemnizaciones: Estimado según desvinculaciones a analizar.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Colegio Ssmo. Rosario · Monteros, Tucumán · Presupuesto 2026
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════ PUNTO DE EQUILIBRIO ═══════════════════════════════ -->
+    <div class="panel" id="tab-pe">
+      <div class="page-title">Punto de Equilibrio</div>
+      <p class="page-sub">Cantidad de alumnos necesaria para cubrir todos los costos operativos. Se calcula sobre el presupuesto vigente.</p>
+
+      <div class="metrics" id="met-pe"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="section">
+          <div class="section-head">◈ Sin Unidades de Negocio</div>
+          <div class="section-body">
+            <div id="pe-sin-uni" style="font-size:13px;line-height:2"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head">◈ Con Unidades de Negocio</div>
+          <div class="section-body">
+            <div id="pe-con-uni" style="font-size:13px;line-height:2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">◈ Gráfico — Ingresos vs Costos</div>
+        <div class="section-body" style="padding:16px">
+          <canvas id="pe-chart" height="120"></canvas>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:12px">
+        <div class="section-head">◈ Supuestos del Cálculo</div>
+        <div class="section-body" id="pe-supuestos" style="font-size:12px;line-height:1.9;color:var(--text2)"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($( id )?.value || 0) || 0;
+const fmt = v => {
+  const n = Math.round(Math.abs(v));
+  const s = '$ ' + n.toLocaleString('es-AR');
+  return v < 0 ? '(' + s + ')' : s;
+};
+const fmtPos = v => '$ ' + Math.round(Math.abs(v)).toLocaleString('es-AR');
+const pct = (v, ref) => ref > 0 ? ((v - ref) / ref * 100).toFixed(0) : '—';
+
+// ─── GUARDAR / CARGAR ESTADO ───
+function guardarEstado() {
+  const estado = capturarEstado();
+  const blob = new Blob([JSON.stringify(estado, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const fecha = new Date().toISOString().slice(0,10);
+  a.download = `estado_presupuesto_${fecha}.json`;
+  a.click();
+  $('last-saved').textContent = '💾 estado guardado ' + new Date().toLocaleTimeString('es-AR');
+}
+
+function cargarEstado(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const estado = JSON.parse(e.target.result);
+      if (!estado.v) throw new Error('Archivo inválido');
+      aplicarEstado(estado);
+      // También subir a Firebase para sincronizar al equipo
+      if (window._fbSave) window._fbSave(estado);
+      $('last-saved').textContent = '📂 estado restaurado ' + new Date().toLocaleTimeString('es-AR');
+      event.target.value = '';
+    } catch(err) {
+      alert('Error al cargar el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ─── RESPONSABLES ───
+const respIds = ['resp-activo','resp-pasivo','resp-cuotas','resp-recursos','resp-egresos','resp-inversiones'];
+
+function respBadge(id) {
+  return `<span class="resp-badge">
+    <span class="resp-label">responsable:</span>
+    <span id="${id}-name" class="resp-name empty" onclick="editResp('${id}')" title="Clic para asignar responsable">sin asignar</span>
+    <input id="${id}-inp" class="resp-inp" type="text" placeholder="nombre..." maxlength="30"
+      onblur="cerrarResp('${id}')" onkeydown="if(event.key==='Enter')this.blur()">
+  </span>`;
+}
+
+function editResp(id) {
+  const name=$(id+'-name'), inp=$(id+'-inp');
+  if(!name||!inp) return;
+  inp.value = name.classList.contains('empty') ? '' : name.textContent;
+  name.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarResp(id) {
+  const name=$(id+'-name'), inp=$(id+'-inp');
+  if(!name||!inp) return;
+  const v = inp.value.trim();
+  if(v) {
+    name.textContent = v;
+    name.classList.remove('empty');
+  } else {
+    name.textContent = 'sin asignar';
+    name.classList.add('empty');
+  }
+  inp.style.display='none'; name.style.display='inline-block';
+}
+
+function initResponsables() {
+  // Inyectar badges en todos los wrappers
+  ['activo','pasivo','cuotas','recursos','egresos','inversiones'].forEach(key => {
+    const wrap = $(`resp-${key}-wrap`);
+    if (wrap) wrap.innerHTML = respBadge(`resp-${key}`);
+  });
+}
+
+function editNombre() {
+  const disp=$('nombre-colegio-disp'), inp=$('nombre-colegio-inp');
+  if(!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarNombre() {
+  const disp=$('nombre-colegio-disp'), inp=$('nombre-colegio-inp');
+  if(!disp||!inp) return;
+  const v = inp.value.trim() || 'Colegio';
+  disp.textContent = v;
+  inp.style.display='none'; disp.style.display='inline';
+}
+
+function goTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  $('tab-' + id).classList.add('active');
+  el.classList.add('active');
+  updateAll();
+}
+
+// ─── HELPER: campo con display formateado y edición por clic ───
+function fmtField(id, label, val) {
+  return `<div class="field">
+    <label>${label}</label>
+    <div style="position:relative">
+      <span id="${id}-disp" style="display:block;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:text;font-size:13px;min-height:34px;line-height:1.6"
+        onclick="editFmtField('${id}')">${fmt(val)}</span>
+      <input type="number" id="${id}" value="${val}" style="display:none;position:absolute;top:0;left:0;width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);font-family:'DM Mono',monospace;font-size:13px;color:var(--text)"
+        onblur="cerrarFmtField('${id}')" oninput="calcInicio()">
+    </div>
+  </div>`;
+}
+function editFmtField(id) {
+  const disp=$(id+'-disp'), inp=$(id);
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='block'; inp.focus(); inp.select();
+}
+function cerrarFmtField(id) {
+  const disp=$(id+'-disp'), inp=$(id);
+  if (!disp||!inp) return;
+  disp.textContent = fmt(parseFloat(inp.value)||0);
+  inp.style.display='none'; disp.style.display='block';
+  calcInicio();
+}
+
+const acFields = [
+  {id:'ac-caja',  label:'Caja (111100 + 111300 + 111400)',  val:39221356},
+  {id:'ac-me',    label:'Moneda Extranjera',                val:4705075},
+  {id:'ac-vc',    label:'Valores al Cobro',                 val:7444339},
+  {id:'ac-fr',    label:'Fondos a Rendir Cuenta',           val:1275600},
+  {id:'ac-tc',    label:'Tarjeta / Cobros a Acreditar',     val:32242415},
+  {id:'ac-rapi',  label:'Mercado Pago',                     val:9831},
+  {id:'ac-banco', label:'Bancos (Macro + Galicia + Roela)', val:31202843},
+  {id:'ac-fci',   label:'Plazo Fijo / FCI',                 val:227455695},
+  {id:'ac-apest', label:'Aportes Estatales a Cobrar',       val:50343853},
+  {id:'ac-otras', label:'Otras Cuentas a Cobrar',           val:13891318},
+];
+const pcFields = [
+  {id:'pc-sue',   label:'Sueldos a Pagar (Febrero)',        val:84575674},
+  {id:'pc-apo',   label:'Aportes y Contrib. Febrero',       val:19320082},
+  {id:'pc-ret',   label:'Retenciones Judiciales / Mutuales',val:1485511},
+  {id:'pc-hon',   label:'Proveedores y Honorarios',         val:2017120},
+  {id:'pc-fdt',   label:'Fondos con Destino Específico',    val:2813761},
+  {id:'pc-rpe',   label:'ART + Seguros de Vida + Sindicatos',val:3088541},
+  {id:'pc-pro',   label:'Anticipos Cobrados (Matrículas/Aranceles)',val:237348074},
+  {id:'pc-eco',   label:'Sueldos Detallados a Pagar',       val:3144625},
+];
+
+function initInicio() {
+  const acGrid = $('ac-grid');
+  if (acGrid) acGrid.innerHTML = acFields.map(f => fmtField(f.id, f.label, f.val)).join('');
+  const pcGrid = $('pc-grid');
+  if (pcGrid) pcGrid.innerHTML = pcFields.map(f => fmtField(f.id, f.label, f.val)).join('');
+}
+
+// ─── INICIO ───
+function calcInicio() {
+  const acKeys = ['caja','me','vc','fr','tc','rapi','banco','fci','apest','otras'];
+  const pcKeys = ['sue','apo','ret','hon','fdt','rpe','pro','eco'];
+  const ac = acKeys.reduce((s,k) => s + num('ac-'+k), 0);
+  const pc = pcKeys.reduce((s,k) => s + num('pc-'+k), 0);
+  const liq = ac - pc;
+  $('tot-ac').textContent = fmt(ac);
+  $('tot-pc').textContent = fmt(pc);
+  $('met-inicio').innerHTML = `
+    <div class="metric"><div class="mlabel">Activo Corriente</div><div class="mval">${fmt(ac)}</div></div>
+    <div class="metric"><div class="mlabel">Pasivo Corriente</div><div class="mval neg">${fmt(pc)}</div></div>
+    <div class="metric"><div class="mlabel">Liquidez Neta al Inicio</div><div class="mval ${liq>=0?'pos':'neg'}">${fmt(liq)}</div></div>
+  `;
+  return liq;
+}
+
+// ─── CUOTAS ───
+let niveles = [
+  {n:'Maternal', al:67, cu:200000, cc:3000},
+  {n:'Jardín de 3', al:89, cu:145000, cc:3000},
+  {n:'Jardín de 4', al:92, cu:145000, cc:3000},
+  {n:'Jardín de 5', al:99, cu:145000, cc:3000},
+  {n:'Primario 1° a 6°', al:623, cu:155000, cc:3000},
+  {n:'Secundaria', al:575, cu:158000, cc:3000},
+];
+
+function renderCuotaBody() {
+  $('cuota-body').innerHTML = niveles.map((nv, i) => `
+    <tr id="nv-row-${i}">
+      <td><input value="${nv.n}" oninput="niveles[${i}].n=this.value" style="width:140px;text-align:left;border:none;background:transparent;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--text)"></td>
+      <td class="r"><input type="number" id="nv-al-${i}" value="${nv.al}" oninput="niveles[${i}].al=+this.value;calcCuotas()" style="width:55px"></td>
+      <td class="r" style="white-space:nowrap">
+        <span id="nv-cu-disp-${i}" style="cursor:text;font-size:12.5px" onclick="editCuotaBase(${i})">${fmt(nv.cu)}</span>
+        <input type="number" id="nv-cu-${i}" value="${nv.cu}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px"
+          onblur="cerrarCuotaBase(${i})" oninput="niveles[${i}].cu=+this.value;calcCuotas()">
+      </td>
+      <td class="r" style="white-space:nowrap">
+        <span id="nv-cc-disp-${i}" style="cursor:text;font-size:12.5px;color:var(--warn)" onclick="editCuotaComplejo(${i})">${fmt(nv.cc||0)}</span>
+        <input type="number" id="nv-cc-${i}" value="${nv.cc||0}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid #DDCB8A;border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--warn)"
+          onblur="cerrarCuotaComplejo(${i})" oninput="niveles[${i}].cc=+this.value;calcCuotas()">
+      </td>
+      ${[3,4,5,6,7,8,9,10,11,12].map(m => `<td class="r muted" id="nv-m${m}-${i}" style="font-size:12px"></td>`).join('')}
+      <td class="r" id="nv-matr-${i}" style="font-size:12px;background:var(--info-lt);color:var(--info);font-weight:500;white-space:nowrap"></td>
+      <td class="r" id="nv-tot-${i}" style="font-weight:500;white-space:nowrap"></td>
+      <td><button onclick="delNivel(${i})" title="Eliminar nivel" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px;line-height:1">✕</button></td>
+    </tr>
+  `).join('');
+  calcCuotas();
+}
+
+function editCuotaComplejo(i) {
+  const disp = $('nv-cc-disp-'+i), inp = $('nv-cc-'+i);
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarCuotaComplejo(i) {
+  const disp = $('nv-cc-disp-'+i), inp = $('nv-cc-'+i);
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  niveles[i].cc = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcCuotas();
+}
+
+function editCuotaBase(i) {
+  const disp = $('nv-cu-disp-'+i), inp = $('nv-cu-'+i);
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarCuotaBase(i) {
+  const disp = $('nv-cu-disp-'+i), inp = $('nv-cu-'+i);
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  niveles[i].cu = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcCuotas();
+}
+
+function addNivel() {
+  niveles.push({n:'Nuevo Nivel', al:0, cu:0});
+  renderCuotaBody();
+}
+
+function delNivel(i) {
+  if (niveles.length <= 1) return;
+  niveles.splice(i, 1);
+  renderCuotaBody();
+}
+
+function getMults() {
+  // acumulado mes a mes desde marzo (base=0 aumento) hasta diciembre
+  const aumsIds = ['aumMar','aumAbr','aumMay','aumJun','aumJul','aumAgo','aumSep','aumOct','aumNov','aumDic'];
+  let acum = 1;
+  return aumsIds.map(id => {
+    acum = acum * (1 + num(id)/100);
+    return acum;
+  });
+}
+
+function calcCuotas() {
+  const mults = getMults(); // [mar, abr, may, jun, jul, ago, sep, oct, nov, dic]
+  const mids = [3,4,5,6,7,8,9,10,11,12];
+  const beca = num('pBeca')/100;
+  let grandTotal = 0, grandMatr = 0, grandBeca = 0, totalAlumnos = 0;
+
+  niveles.forEach((_, i) => {
+    const al = num('nv-al-'+i);
+    const cu = num('nv-cu-'+i);       // cuota base — recibe % incremento
+    const cc = num('nv-cc-'+i) || 0;  // cuota complejo — FIJA, sin incremento
+    totalAlumnos += al;
+    let tot = 0;
+    mults.forEach((m, mi) => {
+      // mensualidad = (cuota base × multiplicador) + cuota complejo fija
+      const v = Math.round(al * (cu * m + cc));
+      tot += v;
+      const el = $('nv-m' + mids[mi] + '-' + i);
+      if (el) el.textContent = v >= 1000000 ? (v/1000000).toFixed(1)+'M' : (v >= 1000 ? (v/1000).toFixed(0)+'k' : v);
+    });
+    // Matrícula = 2 × cuota BASE de diciembre (sin complejo, sin beca)
+    const cuotaDic = Math.round(cu * mults[9]);
+    const matr = cuotaDic * 2 * al;
+    grandMatr += matr;
+    const matrEl = $('nv-matr-'+i);
+    if (matrEl) matrEl.textContent = fmt(matr);
+    // Beca aplica sobre mensualidades (cuota base + complejo)
+    const becaFila = Math.round(tot * beca);
+    const totNeto = tot - becaFila;
+    grandTotal += tot;
+    grandBeca += becaFila;
+    const te = $('nv-tot-'+i);
+    if (te) te.textContent = fmt(totNeto);
+  });
+
+  const totalNeto = grandTotal - grandBeca;
+  const footRows = `
+    <tr class="row-sub">
+      <td colspan="4"><strong>Total bruto</strong></td>
+      ${[3,4,5,6,7,8,9,10,11,12].map(m => {
+        let colTot = 0;
+        niveles.forEach((_,i) => colTot += Math.round(num('nv-al-'+i)*(num('nv-cu-'+i)*(getMults()[m-3])+(num('nv-cc-'+i)||0))));
+        return `<td class="r" style="font-weight:500;white-space:nowrap;font-size:12px">${colTot>=1000000?(colTot/1000000).toFixed(1)+'M':(colTot/1000).toFixed(0)+'k'}</td>`;
+      }).join('')}
+      <td class="r" style="background:var(--info-lt);color:var(--info);font-weight:500">${fmt(grandMatr)}</td>
+      <td class="r" style="font-weight:500">${fmt(totalNeto)}</td>
+      <td></td>
+    </tr>
+  `;
+  $('cuota-foot').innerHTML = footRows;
+
+  $('cuota-totalbar').innerHTML = `
+    <span>Mensual. bruto: <strong>${fmt(grandTotal)}</strong></span>
+    <span>Becas/Desc. (solo cuotas): <strong style="color:var(--danger)">${fmt(grandBeca)}</strong></span>
+    <span>Beca mensual prom.: <strong style="color:var(--danger)">${fmt(grandBeca/10)}</strong></span>
+    <span>Mensual. netas: <strong style="color:var(--accent)">${fmt(grandTotal - grandBeca)}</strong></span>
+    <span>Matrículas (sin beca): <strong style="color:var(--info)">${fmt(grandMatr)}</strong></span>
+  `;
+
+  $('met-cuotas').innerHTML = `
+    <div class="metric"><div class="mlabel">Total Alumnos</div><div class="mval">${totalAlumnos}</div></div>
+    <div class="metric"><div class="mlabel">Mensualidades Brutas</div><div class="mval">${fmt(grandTotal)}</div></div>
+    <div class="metric"><div class="mlabel">Becas / Desc. (solo cuotas)</div><div class="mval neg">${fmt(grandBeca)}</div></div>
+    <div class="metric"><div class="mlabel">Beca mensual promedio</div><div class="mval neg">${fmt(grandBeca/10)}</div></div>
+    <div class="metric"><div class="mlabel">Mensualidades Netas</div><div class="mval pos">${fmt(grandTotal - grandBeca)}</div></div>
+    <div class="metric"><div class="mlabel">Matrículas (sin beca)</div><div class="mval" style="color:var(--info)">${fmt(grandMatr)}</div></div>
+  `;
+
+  return {mensNeto: grandTotal - grandBeca, mensBruto: grandTotal, matriculas: grandMatr, becaTotal: grandBeca};
+}
+
+function getCuotasNeto() {
+  // Usado para la base de cálculo de Caja Generalicia (neto de becas)
+  return calcCuotas().mensNeto;
+}
+
+function getCuotasBruto() {
+  // Usado para la cuenta 412001 Mensualidades (bruto, becas se deducen por 412018)
+  return calcCuotas().mensBruto;
+}
+
+function getMatriculas() {
+  return calcCuotas().matriculas;
+}
+
+// ─── RECURSOS ───
+// Grupos para renderizar encabezados de sección en la tabla
+const recGroups = [
+  { titulo: '411 · Recursos por Aporte Estatal', items: [
+    {id:'r-apest',    cod:'411001', label:'Aportes Estatales',                         ref:475540387, men:47554039, ms:10, auto:false},
+  ]},
+  { titulo: '412 · Recursos Ordinarios — Aranceles', items: [
+    {id:'r-mens',     cod:'412001', label:'Mensualidades (auto · desde Cuotas)',        ref:899756674, men:0,        ms:1,  auto:'mens'},
+    {id:'r-matr',     cod:'412002', label:'Matrículas (auto · 2× cuota Dic)',           ref:173391960, men:0,        ms:1,  auto:'matr'},
+    {id:'r-beca',     cod:'412018', label:'Descuentos por Becas (deducción)',           ref:-11631750, men:0,        ms:1,  auto:'beca'},
+    {id:'r-incob',    cod:'412003', label:'Recupero Incobrables',                       ref:97980,     men:97980,    ms:1,  auto:false, total:true},
+  ]},
+  { titulo: '413 · Recursos Ordinarios Otros', items: [
+    {id:'r-reint',    cod:'413001', label:'Reintegro Gastos Adm. y Comisiones',         ref:19959100,  men:1995910,  ms:10, auto:false},
+    {id:'r-seguros',  cod:'413002', label:'Reintegro Seguros (Escolar / ART)',          ref:131531,    men:13153,    ms:10, auto:false},
+    {id:'r-act-edu',  cod:'413005', label:'Actividades y Salidas Educativas Ingreso',   ref:9281500,   men:928150,   ms:10, auto:false},
+    {id:'r-dep',      cod:'413003', label:'Materiales y Refrigerios',                   ref:1329000,   men:132900,   ms:10, auto:false},
+    {id:'r-ext-hor',  cod:'413009', label:'Seguros Cobrados',                           ref:2016494,   men:201649,   ms:10, auto:false},
+    {id:'r-mat-ini',  cod:'413008', label:'Material Nivel Inicial',                     ref:450000,    men:45000,    ms:10, auto:false},
+    {id:'r-otros-a1', cod:'413010', label:'Otros Aranceles (EduMovil / App)',           ref:2691100,   men:269110,   ms:10, auto:false},
+    {id:'r-ingles',   cod:'413011', label:'Otros Aranceles Gimnasia',                   ref:5136454,   men:513645,   ms:10, auto:false},
+  ]},
+  { titulo: '414 · Recursos por Otras Actividades Especiales', items: [
+    {id:'r-uni-ing',  cod:'414005', label:'Vta. Uniformes',                             ref:70137420,  men:5844785,  ms:12, auto:false, unidad:'uni'},
+    {id:'r-lib-ing',  cod:'414006', label:'Vta. Librería',                              ref:45175930,  men:4517593,  ms:10, auto:false, unidad:'uni'},
+    {id:'r-tarj',     cod:'414013', label:'Recupero Gastos Tarjetas de Crédito',        ref:200000,    men:20000,    ms:10, auto:false},
+    {id:'r-can-ing',  cod:'414001', label:'Alquiler/Concesión Cantina y/o Librería',    ref:13500000,  men:1350000,  ms:10, auto:false, unidad:'can'},
+    {id:'r-pat',      cod:'414007', label:'Patrocinio',                                 men:185000,   ms:10, auto:false, ref:1850000},
+    {id:'r-eventos',  cod:'414015', label:'Ingresos por Eventos Comunitarios',          ref:1080000,   men:108000,   ms:10, auto:false},
+    {id:'r-alq',      cod:'414003', label:'Alquiler Espacios Colegio',                  ref:952553,    men:95255,    ms:10, auto:false, unidad:'alq'},
+    {id:'r-est-ing',  cod:'414002', label:'Alquiler Locales Comerciales',               ref:233895,    men:23390,    ms:10, auto:false, unidad:'alq'},
+  ]},
+  { titulo: '415 · Ingresos Financieros', items: [
+    {id:'r-int',      cod:'415001', label:'Intereses y Rendimiento de Inversiones',     ref:39522899,  men:3293575,  ms:12, auto:false},
+    {id:'r-mora',     cod:'415002', label:'Recargos por Mora',                          ref:21667687,  men:1805641,  ms:12, auto:false},
+  ]},
+  { titulo: '421 · Recursos Extraordinarios', items: [
+    {id:'r-sob-caja', cod:'421001', label:'Sobrante de Caja',                           ref:0,         men:10000,    ms:1,  auto:false, total:true},
+  ]},
+];
+// Aplanar para las funciones que necesitan lista plana
+const recData = recGroups.flatMap(g => g.items);
+
+function toggleAcc(groupId) {
+  const rows = document.querySelectorAll(`.acc-item[data-group="${groupId}"]`);
+  const hdr = document.querySelector(`.acc-group[data-group="${groupId}"]`);
+  const open = hdr && hdr.classList.contains('open');
+  if (hdr) hdr.classList.toggle('open');
+  rows.forEach(r => r.classList.toggle('hidden'));
+}
+
+// ─── CUENTAS PERSONALIZADAS ───
+// Cuentas extras agregadas por el usuario en cada grupo (rec y egr)
+const recExtras = {}; // { gi: [{id, cod, label, men, ms}] }
+const egrExtras = {}; // { gi: [{id, cod, label, ref}] }
+let _customSeq = 1;
+function newCid() { return 'cx-' + (_customSeq++); }
+
+function initRecursos() {
+  let html = '';
+  recGroups.forEach((g, gi) => {
+    const gid = 'rg-' + gi;
+    // No renderizar el grupo 511 items con subs desde acá (ese es solo egresos)
+    html += `<tr class="acc-group" data-group="${gid}" onclick="toggleAcc('${gid}')">
+      <td colspan="5"><i class="toggle-icon">▶</i>${g.titulo}<span id="${gid}-sub" style="float:right;font-weight:400;font-size:11px;opacity:.7">—</span></td>
+    </tr>`;
+    html += g.items.map((r, ri) => renderRecRow(r, gid, gi, ri)).join('');
+    // Filas extras del usuario
+    if (!recExtras[gi]) recExtras[gi] = [];
+    html += recExtras[gi].map((r, ei) => renderRecExtraRow(r, gid, gi, ei)).join('');
+    // Botón agregar cuenta
+    const canAdd = !g.items.some(r => r.auto); // no agregar en grupos auto
+    html += `<tr class="acc-item hidden" data-group="${gid}">
+      <td colspan="5" style="padding:4px 16px">
+        <button onclick="event.stopPropagation();addRecExtra(${gi})" style="font-size:11px;color:var(--accent);background:none;border:1px dashed var(--accent);border-radius:4px;padding:3px 10px;cursor:pointer">+ agregar cuenta</button>
+      </td>
+    </tr>`;
+    html += `<tr style="display:none"><td id="${gid}-total"></td></tr>`;
+  });
+  $('rec-body').innerHTML = html;
+}
+
+function uniSelector(currentVal, onchangeJs) {
+  const opts = [
+    ['', '— ninguna —'],
+    ['uni', '🏷 Uniforme y Librería'],
+    ['can', '🍽 Cantina'],
+    ['alq', '🏢 Alquileres / Otros'],
+  ];
+  return `<select onchange="${onchangeJs}" style="font-size:10px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text2);font-family:'DM Mono',monospace;cursor:pointer">
+    ${opts.map(([v,l]) => `<option value="${v}" ${v===currentVal?'selected':''}>${l}</option>`).join('')}
+  </select>`;
+}
+
+function renderRecRow(r, gid, gi, ri) {
+  const ref2025 = r.ref || 0;
+  const refStr = ref2025 !== 0
+    ? `<span style="font-size:12px;color:var(--text3)">${ref2025 < 0 ? '(' : ''}$ ${Math.round(Math.abs(ref2025)).toLocaleString('es-AR')}${ref2025 < 0 ? ')' : ''}</span>`
+    : `<span style="color:var(--text3);font-size:12px">—</span>`;
+  const uniSel = gi === 3
+    ? uniSelector(r.unidad||'', `recGroups[${gi}].items[${ri}].unidad=this.value;renderAndRefreshUnidades()`)
+    : '';
+
+  if (r.auto) {
+    return `<tr class="acc-item hidden" data-group="${gid}">
+      <td><span style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace">${r.cod}</span>${r.label}
+        ${uniSel ? `<span style="margin-left:8px">${uniSel}</span>` : ''}</td>
+      <td class="r">${refStr}</td>
+      <td class="r" style="color:var(--text3);font-size:11px">auto</td>
+      <td class="r">
+        <span id="${r.id}-disp" style="color:var(--text3);font-size:12.5px">—</span>
+        <input type="hidden" id="${r.id}-m" value="${r.men}">
+      </td>
+      <td class="r" id="${r.id}-v">—</td>
+    </tr>`;
+  }
+
+  return `<tr class="acc-item hidden" data-group="${gid}">
+    <td>
+      <span style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace">${r.cod}</span>${r.label}
+      ${uniSel ? `<span style="margin-left:8px">${uniSel}</span>` : ''}
+    </td>
+    <td class="r">${refStr}</td>
+    <td class="r">
+      <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+        <input type="number" id="${r.id}-pct" placeholder="—" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctRec('${r.id}',${ref2025})">
+        <span style="font-size:11px;color:var(--text3)">%</span>
+      </div>
+    </td>
+    <td class="r">
+      <span id="${r.id}-disp" style="cursor:text;font-size:12.5px;font-weight:500" onclick="event.stopPropagation();editarRecTotal('${r.id}')">${fmt(r.men * r.ms)}</span>
+      <input type="number" id="${r.id}-tot-inp" value="${r.men * r.ms}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px"
+        onblur="cerrarRecTotal('${r.id}',${ref2025})" oninput="clearPctRec('${r.id}');calcRecursos()">
+      <input type="hidden" id="${r.id}-m" value="${r.men}">
+      <input type="hidden" id="${r.id}-ms" value="${r.ms}">
+    </td>
+    <td class="r" id="${r.id}-v" style="cursor:pointer" onclick="event.stopPropagation();editarRecTotal('${r.id}')">—</td>
+  </tr>`;
+}
+
+function renderRecExtraRow(r, gid, gi, ei) {
+  const ref2025 = r.ref || 0;
+  const uniSel = gi === 3
+    ? uniSelector(r.unidad||'', `recExtras[${gi}][${ei}].unidad=this.value;renderAndRefreshUnidades()`)
+    : '';
+  return `<tr class="acc-item hidden" data-group="${gid}" style="background:var(--surface)">
+    <td style="padding:4px 8px 4px 28px">
+      <input value="${r.cod}" placeholder="Nº cuenta" oninput="recExtras[${gi}][${ei}].cod=this.value"
+        style="width:70px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);border:none;border-bottom:1px solid var(--border2);background:transparent;margin-right:6px;padding:2px 4px">
+      <input value="${r.label}" placeholder="Descripción de la cuenta" oninput="recExtras[${gi}][${ei}].label=this.value;calcRecursos()"
+        style="width:180px;font-size:12.5px;border:none;border-bottom:1px solid var(--border2);background:transparent;padding:2px 4px">
+      ${uniSel ? `<span style="margin-left:8px">${uniSel}</span>` : ''}
+    </td>
+    <td class="r">
+      <span id="${r.id}-ref-disp" style="cursor:text;font-size:12px;color:var(--text3)" onclick="event.stopPropagation();editRecExtraRef(${gi},${ei},'${r.id}')">${fmt(ref2025)}</span>
+      <input type="number" id="${r.id}-ref-inp" value="${ref2025}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px"
+        onblur="cerrarRecExtraRef(${gi},${ei},'${r.id}')" oninput="calcRecursos()">
+    </td>
+    <td class="r">
+      <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+        <input type="number" id="${r.id}-pct" placeholder="—" style="width:55px;text-align:right;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctRec('${r.id}',${ref2025})">
+        <span style="font-size:11px;color:var(--text3)">%</span>
+      </div>
+    </td>
+    <td class="r">
+      <span id="${r.id}-disp" style="cursor:text;font-size:12.5px;font-weight:500" onclick="event.stopPropagation();editarRecTotal('${r.id}')">${fmt((r.men||0)*(r.ms||12))}</span>
+      <input type="number" id="${r.id}-tot-inp" value="${(r.men||0)*(r.ms||12)}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px"
+        onblur="cerrarRecTotal('${r.id}',${ref2025})" oninput="clearPctRec('${r.id}');calcRecursos()">
+      <input type="hidden" id="${r.id}-m" value="${r.men||0}">
+      <input type="hidden" id="${r.id}-ms" value="${r.ms||12}">
+    </td>
+    <td class="r" style="white-space:nowrap">
+      <span id="${r.id}-v" style="cursor:pointer;font-size:12px" onclick="event.stopPropagation();editarRecTotal('${r.id}')">—</span>
+      <button onclick="event.stopPropagation();moveRecExtra(${gi},${ei},-1)" style="border:none;background:none;cursor:pointer;color:var(--text3);padding:0 3px" title="Subir">↑</button>
+      <button onclick="event.stopPropagation();moveRecExtra(${gi},${ei},1)" style="border:none;background:none;cursor:pointer;color:var(--text3);padding:0 3px" title="Bajar">↓</button>
+      <button onclick="event.stopPropagation();delRecExtra(${gi},${ei})" style="border:none;background:none;cursor:pointer;color:var(--danger);padding:0 3px" title="Eliminar">✕</button>
+    </td>
+  </tr>`;
+}
+
+function addRecExtra(gi) {
+  if (!recExtras[gi]) recExtras[gi] = [];
+  recExtras[gi].push({id: newCid(), cod:'', label:'Nueva cuenta', men:0, ms:12});
+  initRecursos(); calcRecursos();
+  // Reabrir el acordeón del grupo
+  const gid = 'rg-' + gi;
+  const hdr = document.querySelector(`.acc-group[data-group="${gid}"]`);
+  if (hdr && !hdr.classList.contains('open')) { hdr.classList.add('open'); document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r=>r.classList.remove('hidden')); }
+}
+function delRecExtra(gi, ei) {
+  recExtras[gi].splice(ei, 1);
+  initRecursos(); calcRecursos();
+  const gid='rg-'+gi; const hdr=document.querySelector(`.acc-group[data-group="${gid}"]`);
+  if(hdr&&!hdr.classList.contains('open')){hdr.classList.add('open');document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r=>r.classList.remove('hidden'));}
+}
+function moveRecExtra(gi, ei, dir) {
+  const arr = recExtras[gi]; const ni = ei + dir;
+  if (ni < 0 || ni >= arr.length) return;
+  [arr[ei], arr[ni]] = [arr[ni], arr[ei]];
+  initRecursos(); calcRecursos();
+  const gid='rg-'+gi; const hdr=document.querySelector(`.acc-group[data-group="${gid}"]`);
+  if(hdr&&!hdr.classList.contains('open')){hdr.classList.add('open');document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r=>r.classList.remove('hidden'));}
+}
+
+// ─── HELPERS NUEVOS PARA RECURSOS CON REF/PCT ───
+function editarRecTotal(rid) {
+  const disp=$(rid+'-disp'), inp=$(rid+'-tot-inp');
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarRecTotal(rid, ref) {
+  const disp=$(rid+'-disp'), inp=$(rid+'-tot-inp');
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  // Actualizar hidden inputs para compatibilidad con calcRecursos
+  const mInp=$(rid+'-m'), msInp=$(rid+'-ms');
+  if(mInp) mInp.value = v;
+  if(msInp) msInp.value = 1;
+  // Actualizar variación
+  actualizarVarRec(rid, ref, v);
+  calcRecursos();
+}
+function aplicarPctRec(rid, ref) {
+  const pctEl=$(rid+'-pct');
+  if(!pctEl) return;
+  const p = parseFloat(pctEl.value);
+  if(isNaN(p) || Math.abs(ref) === 0) return;
+  const newVal = Math.round(Math.abs(ref) * (1 + p/100));
+  const disp=$(rid+'-disp'), inp=$(rid+'-tot-inp');
+  if(disp) disp.textContent = fmt(newVal);
+  if(inp) inp.value = newVal;
+  const mInp=$(rid+'-m'), msInp=$(rid+'-ms');
+  if(mInp) mInp.value = newVal;
+  if(msInp) msInp.value = 1;
+  actualizarVarRec(rid, ref, newVal);
+  calcRecursos();
+}
+function clearPctRec(rid) {
+  const el=$(rid+'-pct'); if(el) el.value='';
+}
+function actualizarVarRec(rid, ref, val) {
+  const el=$(rid+'-v'); if(!el) return;
+  const absRef = Math.abs(ref);
+  if(absRef === 0) { el.innerHTML='—'; return; }
+  const p = Math.round((val - absRef)/absRef*100);
+  const cl = p < 0 ? 'badge-bad' : (p > 30 ? 'badge-warn' : 'badge-ok');
+  el.innerHTML = `<span class="badge ${cl}">${p>=0?'+':''}${p}%</span>`;
+}
+function editRecExtraRef(gi, ei, rid) {
+  const d=$(rid+'-ref-disp'), i=$(rid+'-ref-inp');
+  if(d&&i){d.style.display='none';i.style.display='inline-block';i.focus();i.select();}
+}
+function cerrarRecExtraRef(gi, ei, rid) {
+  const d=$(rid+'-ref-disp'), i=$(rid+'-ref-inp');
+  if(!d||!i) return;
+  const v=parseFloat(i.value)||0;
+  recExtras[gi][ei].ref=v;
+  d.textContent=fmt(v);
+  i.style.display='none';d.style.display='inline';
+  calcRecursos();
+}
+
+// Barra de incremento de recursos
+function aplicarIncRec() {
+  const pRec = parseFloat($('inc-rec')?.value)||0;
+  recGroups.forEach(g => {
+    g.items.forEach(r => {
+      if (r.auto || !r.ref || r.ref === 0) return;
+      const newVal = Math.round(Math.abs(r.ref) * (1 + pRec/100));
+      const disp=$(r.id+'-disp'), inp=$(r.id+'-tot-inp');
+      if(disp) disp.textContent = fmt(newVal);
+      if(inp) inp.value = newVal;
+      const mInp=$(r.id+'-m'), msInp=$(r.id+'-ms');
+      if(mInp) mInp.value = newVal;
+      if(msInp) msInp.value = 1;
+      const pctEl=$(r.id+'-pct'); if(pctEl) pctEl.value = pRec;
+      actualizarVarRec(r.id, r.ref, newVal);
+    });
+  });
+  calcRecursos();
+}
+
+function calcRecursos() {
+  let total = 0;
+  recGroups.forEach((g, gi) => {
+    let groupTotal = 0;
+    g.items.forEach(r => {
+      let val;
+      if (r.auto === 'mens') {
+        val = calcCuotas().mensBruto;
+        const mel = $(r.id+'-m'); if (mel) mel.value = Math.round(val/10);
+        const disp = $(r.id+'-disp'); if (disp) disp.textContent = fmt(val);
+        actualizarVarRec(r.id, r.ref, val);
+      } else if (r.auto === 'matr') {
+        val = getMatriculas();
+        const disp = $(r.id+'-disp'); if (disp) disp.textContent = fmt(val);
+        actualizarVarRec(r.id, r.ref, val);
+      } else if (r.auto === 'beca') {
+        val = -(calcCuotas().becaTotal);
+        const disp = $(r.id+'-disp');
+        if (disp) { disp.style.color='var(--danger)'; disp.textContent='($ '+Math.round(-val).toLocaleString('es-AR')+')'; }
+        actualizarVarRec(r.id, r.ref, val);
+      } else if (r.total) {
+        val = num(r.id+'-m');
+        const disp=$(r.id+'-disp'); if(disp) disp.textContent=fmt(val);
+        actualizarVarRec(r.id, r.ref||0, val);
+      } else {
+        // Leer del input total (tot-inp) que es editable directamente
+        const totInp=$(r.id+'-tot-inp');
+        val = totInp ? (parseFloat(totInp.value)||0) : num(r.id+'-m') * num(r.id+'-ms');
+        actualizarVarRec(r.id, r.ref||0, val);
+      }
+      groupTotal += val; total += val;
+      const tel = $(r.id+'-tot');
+      if (tel) { tel.textContent = fmt(val); tel.style.color = val < 0 ? 'var(--danger)' : ''; }
+    });
+    // Cuentas extras del usuario
+    (recExtras[gi]||[]).forEach(r => {
+      const totInp=$(r.id+'-tot-inp');
+      const val = totInp ? (parseFloat(totInp.value)||0) : num(r.id+'-m') * num(r.id+'-ms');
+      const disp=$(r.id+'-disp');
+      if(disp) disp.textContent=fmt(val);
+      const tel=$(r.id+'-tot'); if(tel) tel.textContent=fmt(val);
+      actualizarVarRec(r.id, r.ref||0, val);
+      groupTotal += val; total += val;
+    });
+    const gid = 'rg-' + gi;
+    const subEl = $(gid+'-sub'), totEl = $(gid+'-total');
+    if (subEl) subEl.textContent = fmt(groupTotal);
+    if (totEl) { totEl.textContent = fmt(groupTotal); totEl.style.color = groupTotal < 0 ? 'var(--danger)' : ''; }
+  });
+  $('rec-total').textContent = fmt(total);
+  return total;
+}
+
+// ─── EGRESOS ───
+// Sub-unidades para desglose del grupo 511
+const unidades511 = [
+  {key:'col', label:'Colegio'},
+  {key:'est', label:'Estacionamiento'},
+  {key:'can', label:'Cantina'},
+  {key:'uni', label:'Uniforme / Librería'},
+];
+
+const egrGroups = [
+  { titulo: '511 · Gastos en Personal', items: [
+    {id:'e-sue',      cod:'511001', label:'Sueldos',                                    ref:701701915,  tipo:'sal', subs:true},
+    {id:'e-cc',       cod:'511002', label:'Cargas Sociales',                            ref:90545839,   tipo:'sal', subs:true},
+    {id:'e-hab',      cod:'511003', label:'Haberes Sin Aportes',                        ref:437617285,  tipo:'sal', subs:true},
+    {id:'e-asig',     cod:'511012', label:'Asignaciones Familiares',                    ref:8515533,    tipo:'sal', subs:true},
+    {id:'e-indem',    cod:'511005', label:'Indemnización',                              ref:720623,     tipo:'otro', subs:true},
+    {id:'e-cap',      cod:'511006', label:'Capacitación',                               ref:1499500,    tipo:'otro', subs:true},
+    {id:'e-uni-ropa', cod:'511007', label:'Uniformes / Ropa de Trabajo',                ref:1330982,    tipo:'otro', subs:true},
+    {id:'e-otros-p',  cod:'511008', label:'Otros Gastos en Personal',                   ref:4698661,    tipo:'otro', subs:true},
+    {id:'e-com-herm', cod:'511009', label:'Comunidad Hermanas',                         ref:19573233,   tipo:'otro'},
+  ]},
+  { titulo: '512 · Gastos Servicios de Terceros', items: [
+    {id:'e-hon',      cod:'512001', label:'Honorarios',                                 ref:9192900,    tipo:'otro'},
+    {id:'e-seg',      cod:'512002', label:'Seguros',                                    ref:19160501,   tipo:'otro'},
+    {id:'e-lug',      cod:'512003', label:'Luz, Agua, Gas',                             ref:24076603,   tipo:'otro'},
+    {id:'e-tel',      cod:'512004', label:'Teléfono y Comunicaciones',                  ref:1551948,    tipo:'otro'},
+    {id:'e-rep-ed',   cod:'512005', label:'Repar. y Conserv. Edificios',                ref:32374803,   tipo:'otro'},
+    {id:'e-rep-mbl',  cod:'512006', label:'Repar. y Conserv. Muebles',                  ref:58880,      tipo:'otro'},
+    {id:'e-rep-maq',  cod:'512007', label:'Repar. y Conserv. Maquinarias',              ref:0,          tipo:'otro'},
+    {id:'e-rep-aut',  cod:'512008', label:'Repar. y Conserv. Automotores',              ref:0,          tipo:'otro'},
+    {id:'e-limp',     cod:'512009', label:'Servicios y Art. de Limpieza',               ref:3913669,    tipo:'otro'},
+    {id:'e-imp',      cod:'512010', label:'Impuestos y Tasas',                          ref:0,          tipo:'otro'},
+    {id:'e-com',      cod:'512011', label:'Comisiones',                                 ref:19262519,   tipo:'otro'},
+    {id:'e-secu',     cod:'512012', label:'Seguridad y Emergencias Médicas',            ref:595000,     tipo:'otro'},
+  ]},
+  { titulo: '513 · Gastos Administrativos', items: [
+    {id:'e-lib',      cod:'513001', label:'Librería e Impresiones',                     ref:3567200,    tipo:'otro'},
+    {id:'e-it',       cod:'513002', label:'Informática',                                ref:13919421,   tipo:'otro'},
+    {id:'e-prensa',   cod:'513003', label:'Prensa y Difusión',                          ref:815863,     tipo:'otro'},
+    {id:'e-sus',      cod:'513004', label:'Suscripciones',                              ref:939069,     tipo:'otro'},
+    {id:'e-via',      cod:'513005', label:'Viáticos, Agasajos y Regalos',               ref:5957682,    tipo:'otro'},
+    {id:'e-enc',      cod:'513006', label:'Encuentros y Asambleas',                     ref:10886705,   tipo:'otro'},
+    {id:'e-comb',     cod:'513007', label:'Movilidad y Combustible',                    ref:4575211,    tipo:'otro'},
+    {id:'e-mat-did',  cod:'513008', label:'Material Didáctico y Refrigerios Alumnos',   ref:5956752,    tipo:'otro'},
+    {id:'e-banco',    cod:'513009', label:'Gastos Bancarios',                           ref:5383835,    tipo:'otro'},
+    {id:'e-dif-caja', cod:'513011', label:'Diferencias de Caja',                        ref:0,          tipo:'otro'},
+    {id:'e-act-edu',  cod:'513013', label:'Actividades y Salidas Educativas Egreso',    ref:4560676,    tipo:'otro'},
+    {id:'e-don',      cod:'513014', label:'Donación Egreso',                            ref:70500,      tipo:'otro'},
+  ]},
+  { titulo: '514 · Gastos Otras Actividades Especiales', items: [
+    {id:'e-uni-gasto',cod:'514001', label:'Gasto Venta Uniformes',                      ref:49668797,   tipo:'otro', unidad:'uni'},
+    {id:'e-est-gasto',cod:'514002', label:'Gasto Estacionamiento',                      ref:0,          tipo:'otro'},
+    {id:'e-can-gasto',cod:'514003', label:'Gasto Cantina',                              ref:2222469,    tipo:'otro', unidad:'can'},
+    {id:'e-lib-gasto',cod:'514004', label:'Gasto Librería',                             ref:30150291,   tipo:'otro', unidad:'uni'},
+    {id:'e-act-esp',  cod:'514006', label:'Gastos de Actividades Especiales',           ref:0,          tipo:'otro'},
+  ]},
+  { titulo: '516 · Otros Gastos', items: [
+    {id:'e-alq',      cod:'516001', label:'Alquileres y Expensas',                      ref:6900000,    tipo:'otro'},
+    {id:'e-culto',    cod:'516004', label:'Culto',                                      ref:856613,     tipo:'otro'},
+  ]},
+  { titulo: '517 · Aportes a la Caja Común', items: [
+    {id:'e-caja-g', cod:'517001', label:'Aportes a la Caja Común (auto · % sobre base)', ref:50654353, tipo:'otro', auto:'cajagen'},
+  ]},
+  { titulo: '519 · Egresos Financieros', items: [
+    {id:'e-dif-cot',  cod:'519302', label:'Diferencias de Cotizaciones',                ref:0,          tipo:'otro'},
+    {id:'e-int-mora', cod:'519304', label:'Intereses Moratorios y Multas',              ref:2155,       tipo:'otro'},
+  ]},
+];
+const egrData = egrGroups.flatMap(g => g.items);
+
+// ─── BASE CAJA GENERALICIA ───
+// Cuentas que forman la base de cálculo según definición institucional
+const cajaGenBaseIds = [
+  'r-apest',     // 411001 Aportes Estatales
+  'r-mens',      // 412001 Mensualidades
+  'r-matr',      // 412002 Matrículas
+  'r-beca',      // 412018 Descuentos por Becas (negativo)
+  'r-incob',     // 412003 Recupero Incobrables
+  'r-act-edu',   // 413005 Actividades y Salidas Educativas
+  'r-ext-hor',   // 413007 Extensión Horaria
+  'r-mat-ini',   // 413008 Material Nivel Inicial
+  'r-otros-a1',  // 413010 Otros Aranceles
+  'r-ingles',    // 413011 Otros Aranceles Inglés
+];
+
+function getCajaGenBase() {
+  // Lee directamente los totales ya calculados de cada cuenta de la base
+  return cajaGenBaseIds.reduce((s, id) => {
+    const totEl = $(id + '-tot');
+    if (totEl) {
+      // Parsear el valor del elemento de total (formato $ 1.234.567 o ($ 1.234.567))
+      const txt = totEl.textContent.replace(/\./g,'').replace('$','').replace('(','').replace(')','').replace(/\s/g,'');
+      const v = parseFloat(txt) || 0;
+      // Si es beca el valor ya viene negativo desde calcRecursos
+      return s + (totEl.style.color === 'var(--danger)' ? -v : v);
+    }
+    // Fallback: calcular directo
+    const r = recData.find(x => x.id === id);
+    if (!r) return s;
+    let val = 0;
+    if (r.auto === 'mens') val = getCuotasNeto();
+    else if (r.auto === 'matr') val = getMatriculas();
+    else if (r.auto === 'beca') val = -(calcCuotas().becaTotal);
+    else if (r.total) val = num(r.id+'-m');
+    else val = num(r.id+'-m') * num(r.id+'-ms');
+    return s + val;
+  }, 0);
+}
+
+function recalcCajaGen() {
+  const base = getCajaGenBase();
+  const p = parseFloat(document.getElementById('cajagen-pct')?.value) || 4;
+  const val = Math.round(Math.abs(base) * p / 100);
+  const inp = $('e-caja-g'); if (inp) inp.value = val;
+  const disp = $('e-caja-g-disp'); if (disp) disp.textContent = fmt(val);
+  const mensDisp = $('cajagen-mens-disp'); if (mensDisp) mensDisp.textContent = fmt(Math.round(val / 12));
+  const baseDisp = $('cajagen-base-disp'); if (baseDisp) baseDisp.textContent = fmt(Math.abs(base));
+  calcEgresos();
+}
+
+// Obtiene el total de todas las sub-cuentas 511 para una unidad dada
+function get511UnitTotal(unitKey) {
+  return egrGroups[0].items
+    .filter(e => e.subs)
+    .reduce((s, e) => s + num(`${e.id}-${unitKey}`), 0);
+}
+
+function initEgresos() {
+  let html = '';
+  egrGroups.forEach((g, gi) => {
+    const gid = 'eg-' + gi;
+    html += `<tr class="acc-group" data-group="${gid}" onclick="toggleAcc('${gid}')">
+      <td colspan="5"><i class="toggle-icon">▶</i>${g.titulo}<span id="${gid}-sub" style="float:right;font-weight:400;font-size:11px;opacity:.7">—</span></td>
+    </tr>`;
+    html += g.items.map(e => {
+      if (e.auto === 'cajagen') {
+        return `
+        <tr class="acc-item hidden" data-group="${gid}">
+          <td><span style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace">${e.cod}</span>${e.label}</td>
+          <td class="r">
+            <span id="e-caja-g-ref-disp" style="cursor:text;font-size:12px;color:var(--text3)" onclick="event.stopPropagation();editCajaRef()">${fmt(e.ref)}</span>
+            <input type="number" id="e-caja-g-ref-inp" value="${e.ref}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px" onblur="cerrarCajaRef()" oninput="calcEgresos()">
+          </td>
+          <td class="r">
+            <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+              <input type="number" id="cajagen-pct" value="4" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="recalcCajaGen()">
+              <span style="font-size:11px;color:var(--text3)">%</span>
+            </div>
+          </td>
+          <td class="r">
+            <span id="e-caja-g-disp" style="font-size:12.5px;font-weight:500">—</span>
+            <input type="hidden" id="e-caja-g" value="${e.ref}">
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">mensual: <span id="cajagen-mens-disp">—</span></div>
+          </td>
+          <td class="r" style="font-size:11px;color:var(--text3);white-space:nowrap">base: <span id="cajagen-base-disp">—</span></td>
+        </tr>`;
+      }
+
+      // ── Cuenta con desglose por unidad (subs:true) ──
+      if (e.subs) {
+        const subgid = `sub-${e.id}`;
+        const refTotal = e.ref;
+        const subRef = {col: refTotal, est: 0, can: 0, uni: 0};
+        return `
+        <tr class="acc-item hidden" data-group="${gid}" style="background:var(--surface2)">
+          <td colspan="5" style="padding:0">
+            <table style="width:100%;border-collapse:collapse">
+              <tr onclick="toggleSub('${subgid}')" style="cursor:pointer">
+                <td style="padding:6px 28px;font-size:12.5px;width:40%">
+                  <i class="toggle-icon" id="${subgid}-icon" style="display:inline-block;width:14px;font-size:10px;transition:transform .15s;font-style:normal;margin-right:4px">▶</i>
+                  <span id="${e.id}-cod-disp" style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace;cursor:text;border-bottom:1px dashed transparent" onmouseenter="this.style.borderColor='var(--text3)'" onmouseleave="this.style.borderColor='transparent'" onclick="event.stopPropagation();editCampoEgr('${e.id}','cod')">${e.cod}</span>
+                  <input id="${e.id}-cod-inp" value="${e.cod}" style="display:none;width:60px;padding:2px 4px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" onblur="cerrarCampoEgr('${e.id}','cod',true)" onclick="event.stopPropagation()">
+                  <span id="${e.id}-lbl-disp" style="cursor:text;border-bottom:1px dashed transparent" onmouseenter="this.style.borderColor='var(--text2)'" onmouseleave="this.style.borderColor='transparent'" onclick="event.stopPropagation();editCampoEgr('${e.id}','lbl')">${e.label}</span>
+                  <input id="${e.id}-lbl-inp" value="${e.label}" style="display:none;width:180px;padding:2px 4px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px" onblur="cerrarCampoEgr('${e.id}','lbl',true)" onclick="event.stopPropagation()">
+                </td>
+                <td style="padding:6px 12px;text-align:right;font-size:12px;color:var(--text3)" onclick="event.stopPropagation()">
+                  <span id="${e.id}-ref-disp" style="cursor:text;color:var(--text3);font-size:12px;border-bottom:1px dashed transparent" onmouseenter="this.style.borderColor='var(--text3)'" onmouseleave="this.style.borderColor='transparent'" onclick="editRef511('${e.id}')">${fmt(refTotal)}</span>
+                  <input type="number" id="${e.id}-ref-inp" value="${refTotal}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px"
+                    onblur="cerrarRef511('${e.id}')" oninput="calcEgresos()">
+                </td>
+                <td style="padding:6px 12px;text-align:right;font-size:12px;color:var(--text3)"></td>
+                <td style="padding:6px 12px;text-align:right;font-weight:500" id="${e.id}-disp-tot">—</td>
+                <td style="padding:6px 12px;text-align:right" id="${e.id}-v">—</td>
+              </tr>
+              ${unidades511.map(u => `
+              <tr class="sub511-row" data-subgroup="${subgid}" style="display:none;background:var(--surface)">
+                <td style="padding:4px 44px;font-size:12px;color:var(--text2)">↳ ${u.label}</td>
+                <td></td><td></td>
+                <td style="padding:4px 12px;text-align:right">
+                  <span id="${e.id}-${u.key}-disp" style="cursor:text;font-size:12px;font-weight:500" onclick="editSub511('${e.id}','${u.key}')">${fmt(subRef[u.key]||0)}</span>
+                  <input type="number" id="${e.id}-${u.key}" value="${subRef[u.key]||0}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px"
+                    onblur="cerrarSub511('${e.id}','${u.key}')" oninput="calcEgresos()">
+                </td>
+                <td></td>
+              </tr>`).join('')}
+            </table>
+          </td>
+        </tr>`;
+      }
+
+      // ── Cuenta normal ──
+      return renderEgrNormalRow(e, gid, gi);
+    }).join('');
+    // Filas extras del usuario para egresos
+    if (!egrExtras[gi]) egrExtras[gi] = [];
+    html += egrExtras[gi].map((e, ei) => renderEgrExtraRow(e, gid, gi, ei)).join('');
+    // Botón agregar — no en grupo 517 (caja gen auto) ni 511 (personal)
+    const noAdd = gi === 0 || g.titulo.includes('517');
+    if (!noAdd) {
+      html += `<tr class="acc-item hidden" data-group="${gid}">
+        <td colspan="5" style="padding:4px 16px">
+          <button onclick="event.stopPropagation();addEgrExtra(${gi})" style="font-size:11px;color:var(--warn);background:none;border:1px dashed var(--warn);border-radius:4px;padding:3px 10px;cursor:pointer">+ agregar cuenta</button>
+        </td>
+      </tr>`;
+    }
+    html += `<tr style="display:none"><td id="${gid}-ref"></td><td id="${gid}-total"></td></tr>`;
+  });
+  $('egr-body').innerHTML = html;
+}
+
+function renderEgrExtraRow(e, gid, gi, ei) {
+  const uniSel = gi === 3
+    ? uniSelector(e.unidad||'', `egrExtras[${gi}][${ei}].unidad=this.value;renderAndRefreshUnidades()`)
+    : '';
+  return `<tr class="acc-item hidden" data-group="${gid}" style="background:var(--surface)">
+    <td style="padding:4px 8px 4px 28px">
+      <input value="${e.cod}" placeholder="Nº cuenta" oninput="egrExtras[${gi}][${ei}].cod=this.value"
+        style="width:70px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);border:none;border-bottom:1px solid var(--border2);background:transparent;margin-right:6px;padding:2px 4px">
+      <input value="${e.label}" placeholder="Descripción" oninput="egrExtras[${gi}][${ei}].label=this.value"
+        style="width:180px;font-size:12.5px;border:none;border-bottom:1px solid var(--border2);background:transparent;padding:2px 4px">
+      ${uniSel ? `<span style="margin-left:8px">${uniSel}</span>` : ''}
+    </td>
+    <td class="r">
+      <span id="${e.id}-ref-disp" style="cursor:text;font-size:12px;color:var(--text3)" onclick="event.stopPropagation();editRef('${e.id}')">${fmt(e.ref||0)}</span>
+      <input type="number" id="${e.id}-ref-inp" value="${e.ref||0}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px" onblur="cerrarRef('${e.id}')" oninput="calcEgresos()">
+    </td>
+    <td class="r">
+      <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+        <input type="number" id="${e.id}-pct" placeholder="—" style="width:55px;text-align:right;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctIndiv('${e.id}')">
+        <span style="font-size:11px;color:var(--text3)">%</span>
+      </div>
+    </td>
+    <td class="r">
+      <span id="${e.id}-disp" style="font-size:12.5px;font-weight:500">${fmt(e.ref||0)}</span>
+      <input type="number" id="${e.id}" value="${e.ref||0}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px" onblur="cerrarPres('${e.id}')" oninput="clearPct('${e.id}');calcEgresos()">
+    </td>
+    <td class="r" style="white-space:nowrap">
+      <span id="${e.id}-v" style="cursor:pointer;font-size:12px" onclick="event.stopPropagation();editPres('${e.id}')">—</span>
+      <button onclick="event.stopPropagation();moveEgrExtra(${gi},${ei},-1)" style="border:none;background:none;cursor:pointer;color:var(--text3);padding:0 2px" title="Subir">↑</button>
+      <button onclick="event.stopPropagation();moveEgrExtra(${gi},${ei},1)" style="border:none;background:none;cursor:pointer;color:var(--text3);padding:0 2px" title="Bajar">↓</button>
+      <button onclick="event.stopPropagation();delEgrExtra(${gi},${ei})" style="border:none;background:none;cursor:pointer;color:var(--danger);padding:0 2px" title="Eliminar">✕</button>
+    </td>
+  </tr>`;
+}
+
+function addEgrExtra(gi) {
+  if (!egrExtras[gi]) egrExtras[gi] = [];
+  egrExtras[gi].push({id: newCid(), cod:'', label:'Nueva cuenta', ref:0, tipo:'otro'});
+  initEgresos(); calcEgresos();
+  const gid='eg-'+gi; const hdr=document.querySelector(`.acc-group[data-group="${gid}"]`);
+  if(hdr&&!hdr.classList.contains('open')){hdr.classList.add('open');document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r=>r.classList.remove('hidden'));}
+}
+function delEgrExtra(gi, ei) {
+  egrExtras[gi].splice(ei, 1);
+  initEgresos(); calcEgresos();
+  const gid='eg-'+gi; const hdr=document.querySelector(`.acc-group[data-group="${gid}"]`);
+  if(hdr&&!hdr.classList.contains('open')){hdr.classList.add('open');document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r=>r.classList.remove('hidden'));}
+}
+function moveEgrExtra(gi, ei, dir) {
+  const arr = egrExtras[gi]; const ni = ei + dir;
+  if (ni < 0 || ni >= arr.length) return;
+  [arr[ei], arr[ni]] = [arr[ni], arr[ei]];
+  initEgresos(); calcEgresos();
+  const gid='eg-'+gi; const hdr=document.querySelector(`.acc-group[data-group="${gid}"]`);
+  if(hdr&&!hdr.classList.contains('open')){hdr.classList.add('open');document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r=>r.classList.remove('hidden'));}
+}
+
+function toggleSub(subgid) {
+  const rows = document.querySelectorAll(`.sub511-row[data-subgroup="${subgid}"]`);
+  const icon = $(`${subgid}-icon`);
+  const open = rows[0] && rows[0].style.display !== 'none';
+  rows.forEach(r => r.style.display = open ? 'none' : 'table-row');
+  if (icon) icon.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+function editSub511(eid, ukey) {
+  const disp=$(`${eid}-${ukey}-disp`), inp=$(`${eid}-${ukey}`);
+  if(!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarSub511(eid, ukey) {
+  const disp=$(`${eid}-${ukey}-disp`), inp=$(`${eid}-${ukey}`);
+  if(!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcEgresos();
+}
+
+function editCajaRef() {
+  const disp = $('e-caja-g-ref-disp'), inp = $('e-caja-g-ref-inp');
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarCajaRef() {
+  const disp=$('e-caja-g-ref-disp'), inp=$('e-caja-g-ref-inp');
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  const e = egrData.find(x=>x.id==='e-caja-g');
+  if (e) e.ref = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcEgresos();
+}
+
+function editRef(eid) {
+  const disp = $(eid+'-ref-disp'), inp = $(eid+'-ref-inp');
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarRef(eid) {
+  const disp=$(eid+'-ref-disp'), inp=$(eid+'-ref-inp');
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  const e = egrData.find(x=>x.id===eid);
+  if (e) e.ref = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcEgresos();
+}
+
+// ── Editar label y código de cualquier cuenta de egresos ──
+function editCampoEgr(eid, campo) {
+  const disp = $(`${eid}-${campo}-disp`), inp = $(`${eid}-${campo}-inp`);
+  if (!disp || !inp) return;
+  disp.style.display = 'none';
+  inp.style.display = 'inline-block';
+  inp.focus(); inp.select();
+}
+
+function cerrarCampoEgr(eid, campo, isSubs) {
+  const disp = $(`${eid}-${campo}-disp`), inp = $(`${eid}-${campo}-inp`);
+  if (!disp || !inp) return;
+  const val = inp.value.trim();
+  disp.textContent = val;
+  inp.style.display = 'none';
+  disp.style.display = 'inline';
+  // Actualizar en el array de datos
+  const arr = isSubs ? egrGroups[0].items : egrData;
+  const e = arr.find(x => x.id === eid);
+  if (e) {
+    if (campo === 'cod') e.cod = val;
+    if (campo === 'lbl') e.label = val;
+  }
+  fbAutoSave();
+}
+
+// ── Ref editable para cuentas 511 (subs:true) ──
+function editRef511(eid) {
+  const disp = $(eid+'-ref-disp'), inp = $(eid+'-ref-inp');
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarRef511(eid) {
+  const disp=$(eid+'-ref-disp'), inp=$(eid+'-ref-inp');
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  // Actualizar ref en egrGroups[0] para que los cálculos lo usen
+  const e = egrGroups[0].items.find(x=>x.id===eid);
+  if (e) e.ref = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcEgresos();
+}
+function editPres(eid) {
+  const disp=$(eid+'-disp'), inp=$(eid);
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarPres(eid) {
+  const disp=$(eid+'-disp'), inp=$(eid);
+  if (!disp||!inp) return;
+  disp.textContent = fmt(parseFloat(inp.value)||0);
+  inp.style.display='none'; disp.style.display='inline';
+  calcEgresos();
+}
+
+function aplicarPctIndiv(eid) {
+  const pctEl = $(eid+'-pct'), valEl = $(eid), dispEl = $(eid+'-disp');
+  if (!pctEl || !valEl) return;
+  const p = parseFloat(pctEl.value);
+  if (!isNaN(p)) {
+    const ref = egrData.find(e => e.id === eid)?.ref || 0;
+    const newVal = Math.round(ref * (1 + p / 100));
+    valEl.value = newVal;
+    if (dispEl) dispEl.textContent = fmt(newVal);
+  }
+  calcEgresos();
+}
+
+function clearPct(eid) {
+  const pctEl = $(eid+'-pct');
+  if (pctEl) pctEl.value = '';
+}
+
+function aplicarInc() {
+  const iS = 1 + num('inc-sal')/100;
+  const iG = 1 + num('inc-gas')/100;
+  egrData.forEach(e => {
+    if (e.subs) {
+      // Distribuir el incremento proporcional a cada sub, manteniendo la distribución actual
+      const total = unidades511.reduce((s,u) => s + num(`${e.id}-${u.key}`), 0);
+      const mult = e.tipo==='sal' ? iS : iG;
+      if (total > 0) {
+        // Escalar cada sub proporcionalmente
+        unidades511.forEach(u => {
+          const sub = num(`${e.id}-${u.key}`);
+          const newVal = Math.round(sub * mult);
+          const inp = $(`${e.id}-${u.key}`); if(inp) inp.value = newVal;
+          const disp = $(`${e.id}-${u.key}-disp`); if(disp) disp.textContent = fmt(newVal);
+        });
+      } else {
+        // Si están en cero, poner el total incremetado todo en Colegio
+        const newVal = Math.round(e.ref * mult);
+        const inp = $(`${e.id}-col`); if(inp) inp.value = newVal;
+        const disp = $(`${e.id}-col-disp`); if(disp) disp.textContent = fmt(newVal);
+      }
+    } else {
+      const newVal = Math.round(e.ref * (e.tipo==='sal' ? iS : iG));
+      const el = $(e.id); if (el) el.value = newVal;
+      const dispEl = $(e.id+'-disp'); if (dispEl) dispEl.textContent = fmt(newVal);
+      const pctEl = $(e.id+'-pct');
+      if (pctEl) pctEl.value = e.tipo==='sal' ? num('inc-sal') : num('inc-gas');
+    }
+  });
+  calcEgresos();
+}
+
+function calcEgresos() {
+  let total = 0;
+  egrGroups.forEach((g, gi) => {
+    let groupTotal = 0, groupRef = 0;
+    g.items.forEach(e => {
+      let v;
+      if (e.subs) {
+        v = unidades511.reduce((s,u) => s + num(`${e.id}-${u.key}`), 0);
+        const inp = $(e.id); if(inp) inp.value = v;
+        const dispTot = $(`${e.id}-disp-tot`); if(dispTot) dispTot.textContent = fmt(v);
+        const p = parseFloat(pct(v, e.ref));
+        const cl = p > 50 ? 'badge-bad' : (p > 20 ? 'badge-warn' : 'badge-ok');
+        const vEl = $(`${e.id}-v`); if(vEl) vEl.innerHTML = `<span class="badge ${cl}">${p>=0?'+':''}${isNaN(p)?'—':p+'%'}</span>`;
+      } else {
+        v = num(e.id);
+        const p = parseFloat(pct(v, e.ref));
+        const cl = p > 50 ? 'badge-bad' : (p > 20 ? 'badge-warn' : 'badge-ok');
+        const el = $(e.id+'-v'); if (el) el.innerHTML = `<span class="badge ${cl}">${p>=0?'+':''}${isNaN(p)?'—':p+'%'}</span>`;
+        const dispEl = $(e.id+'-disp'), inpEl = $(e.id);
+        if (dispEl && inpEl && inpEl.style.display==='none') dispEl.textContent = fmt(v);
+      }
+      groupTotal += v; groupRef += e.ref; total += v;
+    });
+    // Cuentas extras del usuario
+    (egrExtras[gi]||[]).forEach(e => {
+      const v = num(e.id);
+      const p = parseFloat(pct(v, e.ref||0));
+      const cl = p > 50 ? 'badge-bad' : (p > 20 ? 'badge-warn' : 'badge-ok');
+      const vEl=$(e.id+'-v'); if(vEl) vEl.innerHTML=`<span class="badge ${cl}">${p>=0?'+':''}${isNaN(p)?'—':p+'%'}</span>`;
+      const dispEl=$(e.id+'-disp'), inpEl=$(e.id);
+      if(dispEl&&inpEl&&inpEl.style.display==='none') dispEl.textContent=fmt(v);
+      groupTotal += v; groupRef += (e.ref||0); total += v;
+    });
+    const gid = 'eg-' + gi;
+    const subEl=$(gid+'-sub'), totEl=$(gid+'-total'), refEl=$(gid+'-ref');
+    if (subEl) subEl.textContent = fmt(groupTotal);
+    if (totEl) totEl.textContent = fmt(groupTotal);
+    if (refEl) refEl.textContent = fmt(groupRef);
+  });
+  $('egr-total').textContent = fmt(total);
+  calcUnidadesER();
+  return total;
+}
+
+function getTotalEgresos() {
+  // Total egresos operativos del Colegio:
+  // = todos los egresos - sueldos de unidades (est/can/uni)
+  // Los sueldos de unidades van en getUnidadTotals(), no aquí
+  const total511Unidades = egrGroups[0].items
+    .filter(e => e.subs)
+    .reduce((s, e) => s + num(`${e.id}-est`) + num(`${e.id}-can`) + num(`${e.id}-uni`), 0);
+  const baseTotal   = egrData.reduce((s,e) => s + num(e.id), 0);
+  const extrasTotal = Object.values(egrExtras).flat().reduce((s,e) => s + num(e.id), 0);
+  return baseTotal + extrasTotal - total511Unidades;
+}
+
+// ─── UNIDADES DE NEGOCIO — SISTEMA DINÁMICO ───
+// Las unidades son fijas pero sus cuentas se asignan dinámicamente
+// desde el campo `unidad` de cada cuenta en recGroups/egrGroups/recExtras/egrExtras
+
+const unidadesER = [
+  { id: 'uni', label: 'Uniforme y Librería' },
+  { id: 'can', label: 'Cantina'            },
+  { id: 'alq', label: 'Alquileres / Otros'  },
+];
+
+// Obtiene las cuentas asignadas a una unidad dinámicamente
+function getUniIngIds(uid) {
+  const ids = [];
+  recGroups.forEach(g => g.items.forEach(r => { if (r.unidad === uid) ids.push(r.id); }));
+  Object.values(recExtras).flat().forEach(r => { if (r.unidad === uid) ids.push(r.id); });
+  return ids;
+}
+function getUniGasIds(uid) {
+  const ids = [];
+  egrGroups.forEach(g => g.items.forEach(e => { if (e.unidad === uid && !e.subs) ids.push(e.id); }));
+  Object.values(egrExtras).flat().forEach(e => { if (e.unidad === uid) ids.push(e.id); });
+  return ids;
+}
+// Devuelve todas las cuentas con unidad asignada (para el resumen y PE)
+function getAllUniIngIds() {
+  const ids = new Set();
+  recGroups.forEach(g => g.items.forEach(r => { if (r.unidad) ids.add(r.id); }));
+  Object.values(recExtras).flat().forEach(r => { if (r.unidad) ids.add(r.id); });
+  return ids;
+}
+function getAllUniGasIds() {
+  const ids = new Set();
+  egrGroups.forEach(g => g.items.forEach(e => { if (e.unidad && !e.subs) ids.add(e.id); }));
+  Object.values(egrExtras).flat().forEach(e => { if (e.unidad) ids.add(e.id); });
+  return ids;
+}
+
+function erLine(label, val, cls='', indent=false, cod='') {
+  const color = val < 0 ? 'var(--danger)' : (val > 0 ? 'var(--accent)' : 'var(--text3)');
+  const codSpan = cod ? `<span style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace">${cod}</span>` : '';
+  return `<tr class="${cls}"><td class="er-label" style="${indent?'padding-left:32px':''}">${codSpan}${label}</td><td class="er-val" style="color:${color}">${fmt(val)}</td></tr>`;
+}
+
+// Estado persistente de sueldos propios por unidad
+const uerVals = { 'uer-uni-sue': 0, 'uer-can-sue': 0, 'uer-alq-sue': 0 };
+
+function erLineInput(label, id) {
+  const uid = id.replace('uer-','').replace('-sue','');
+  return `<tr>
+    <td class="er-label" style="padding-left:32px">
+      ${label}
+      <span style="font-size:10px;color:var(--text3);margin-left:6px">(auto · desde 511)</span>
+    </td>
+    <td class="er-val" id="er-vge-${uid}" style="color:var(--danger)">$ 0</td>
+  </tr>`;
+}
+
+function editUerField(id) {
+  const disp=$(id+'-disp'), inp=$(id);
+  if(!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarUerField(id) {
+  const disp=$(id+'-disp'), inp=$(id);
+  if(!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  uerVals[id] = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcUnidadesER();
+}
+
+function getRecVal(id) {
+  const r = recData.find(x => x.id === id);
+  if (!r) {
+    // Buscar en extras
+    const extra = Object.values(recExtras).flat().find(x => x.id === id);
+    if (extra) {
+      const totInp=$(id+'-tot-inp');
+      return totInp ? (parseFloat(totInp.value)||0) : 0;
+    }
+    return 0;
+  }
+  if (r.auto === 'mens') return getCuotasNeto();
+  if (r.auto === 'matr') return getMatriculas();
+  if (r.auto === 'beca') return -(calcCuotas().becaTotal);
+  if (r.total) return num(r.id+'-m');
+  const totInp=$(r.id+'-tot-inp');
+  return totInp ? (parseFloat(totInp.value)||0) : num(r.id+'-m') * num(r.id+'-ms');
+}
+
+function getEgrVal(id) {
+  return num(id);
+}
+
+// ─── RENDER UNIDADES — completamente dinámico ───
+function initUnidadesER() {
+  let html = '';
+  unidadesER.forEach(u => {
+    const ingIds = getUniIngIds(u.id);
+    const gasIds = getUniGasIds(u.id);
+    html += `<div class="er-unit-title">${u.label}
+      <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;font-weight:400;margin-left:8px">
+        — las cuentas se asignan desde Recursos y Egresos Op. con el selector de unidad
+      </span>
+    </div>`;
+    html += `<div class="section" style="margin-bottom:14px"><table class="er-table" id="er-table-${u.id}">`;
+
+    // INGRESOS
+    html += `<tr class="er-group"><td colspan="2">INGRESOS</td></tr>`;
+    if (ingIds.length === 0) {
+      html += `<tr><td class="er-label" style="padding-left:32px;color:var(--text3);font-style:italic" colspan="2">Sin cuentas asignadas</td></tr>`;
+    } else {
+      ingIds.forEach(id => {
+        const r = recData.find(x=>x.id===id) || Object.values(recExtras).flat().find(x=>x.id===id);
+        if (r) html += `<tr><td class="er-label" style="padding-left:32px"><span style="font-size:10px;color:var(--text3);margin-right:6px">${r.cod||'—'}</span>${r.label}</td><td class="er-val" id="er-v-${id}">—</td></tr>`;
+      });
+    }
+    html += `<tr class="er-sub"><td class="er-label">Total Ingresos</td><td class="er-val" id="er-vi-${u.id}">—</td></tr>`;
+
+    // COSTOS
+    html += `<tr class="er-group"><td colspan="2">COSTOS Y GASTOS OPERATIVOS</td></tr>`;
+    if (gasIds.length === 0) {
+      html += `<tr><td class="er-label" style="padding-left:32px;color:var(--text3);font-style:italic" colspan="2">Sin cuentas asignadas</td></tr>`;
+    } else {
+      gasIds.forEach(id => {
+        const e = egrData.find(x=>x.id===id) || Object.values(egrExtras).flat().find(x=>x.id===id);
+        if (e) html += `<tr><td class="er-label" style="padding-left:32px"><span style="font-size:10px;color:var(--text3);margin-right:6px">${e.cod||'—'}</span>${e.label}</td><td class="er-val" id="er-gv-${id}" style="color:var(--danger)">—</td></tr>`;
+      });
+    }
+    html += `<tr class="er-sub"><td class="er-label">Resultado Bruto (antes sueldos propios)</td><td class="er-val" id="er-vb-${u.id}">—</td></tr>`;
+
+    // PERSONAL PROPIO
+    html += `<tr class="er-group"><td colspan="2">GASTOS EN PERSONAL PROPIOS</td></tr>`;
+    html += erLineInput('Sueldos y Cargas Propias', `uer-${u.id}-sue`);
+
+    html += `<tr class="er-total"><td>RESULTADO DEL PERÍODO</td><td class="er-val" id="er-vr-${u.id}">—</td></tr>`;
+    html += `<tr><td class="er-label" style="padding-left:16px;font-size:11px;color:var(--text3)">Margen sobre ingresos</td><td class="er-val" style="font-size:11px;color:var(--text3)" id="er-margen-${u.id}">—</td></tr>`;
+    html += `</table></div>`;
+  });
+
+  html += `<div class="er-unit-title" style="margin-top:24px">Consolidado Unidades de Negocio</div>`;
+  html += `<div class="section"><table class="er-table">`;
+  html += `<tr class="er-sub"><td class="er-label">Total Ingresos Unidades</td><td class="er-val" id="er-cons-ing">—</td></tr>`;
+  html += `<tr><td class="er-label" style="padding-left:32px">Total Costos y Gastos Unidades</td><td class="er-val" id="er-cons-gas" style="color:var(--danger)">—</td></tr>`;
+  html += `<tr class="er-total"><td>RESULTADO CONSOLIDADO</td><td class="er-val" id="er-cons-res">—</td></tr>`;
+  html += `</table></div>`;
+
+  const cont = $('unidades-er-content');
+  if (cont) cont.innerHTML = html;
+}
+
+function calcUnidadesER() {
+  let globalIng = 0, globalGas = 0;
+  unidadesER.forEach(u => {
+    const ingIds = getUniIngIds(u.id);
+    const gasIds = getUniGasIds(u.id);
+    const ing = ingIds.reduce((s,id) => s + getRecVal(id), 0);
+    const gasOp = gasIds.reduce((s,id) => s + getEgrVal(id), 0);
+    const gasExtra = get511UnitTotal(u.id);
+    const gasTotal = gasOp + gasExtra;
+    const bruto = ing - gasOp;
+    const resultado = ing - gasTotal;
+    const margen = ing > 0 ? (resultado/ing*100).toFixed(1) : '0.0';
+    globalIng += ing; globalGas += gasTotal;
+
+    ingIds.forEach(id => { const el=$('er-v-'+id); if(el){el.textContent=fmt(getRecVal(id));el.style.color='var(--accent)';} });
+    const vi=$('er-vi-'+u.id); if(vi){vi.textContent=fmt(ing);vi.style.color='var(--accent)';}
+    gasIds.forEach(id => { const el=$('er-gv-'+id); if(el) el.textContent=fmt(-getEgrVal(id)); });
+    const vb=$('er-vb-'+u.id); if(vb){vb.textContent=fmt(bruto);vb.style.color=bruto>=0?'var(--accent)':'var(--danger)';}
+    const vge=$('er-vge-'+u.id); if(vge) vge.textContent=fmt(-gasExtra);
+    const vr=$('er-vr-'+u.id); if(vr){vr.textContent=fmt(resultado);vr.style.color=resultado>=0?'var(--accent)':'var(--danger)';}
+    const vm=$('er-margen-'+u.id); if(vm) vm.textContent=margen+' %';
+  });
+  const ci=$('er-cons-ing'); if(ci){ci.textContent=fmt(globalIng);ci.style.color='var(--accent)';}
+  const cg=$('er-cons-gas'); if(cg) cg.textContent=fmt(-globalGas);
+  const cr=$('er-cons-res'); if(cr){cr.textContent=fmt(globalIng-globalGas);cr.style.color=(globalIng-globalGas)>=0?'var(--accent)':'var(--danger)';}
+}
+
+function renderUnidadesER() { initUnidadesER(); calcUnidadesER(); }
+
+// Cuando cambia una asignación de unidad, re-renderizar las unidades de negocio
+function renderAndRefreshUnidades() {
+  initUnidadesER();
+  calcUnidadesER();
+}
+
+function renderEgrNormalRow(e, gid, gi) {
+  const uniSel = gi === 3
+    ? uniSelector(e.unidad||'', `egrGroups[${gi}].items.find(x=>x.id==='${e.id}').unidad=this.value;renderAndRefreshUnidades()`)
+    : '';
+  return `
+      <tr class="acc-item hidden" data-group="${gid}">
+        <td>
+          <span id="${e.id}-cod-disp" style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace;cursor:text;border-bottom:1px dashed transparent" onmouseenter="this.style.borderColor='var(--text3)'" onmouseleave="this.style.borderColor='transparent'" onclick="event.stopPropagation();editCampoEgr('${e.id}','cod')">${e.cod}</span>
+          <input id="${e.id}-cod-inp" value="${e.cod}" style="display:none;width:60px;padding:2px 4px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)" onblur="cerrarCampoEgr('${e.id}','cod',false)" onclick="event.stopPropagation()">
+          <span id="${e.id}-lbl-disp" style="cursor:text;border-bottom:1px dashed transparent" onmouseenter="this.style.borderColor='var(--text2)'" onmouseleave="this.style.borderColor='transparent'" onclick="event.stopPropagation();editCampoEgr('${e.id}','lbl')">${e.label}</span>
+          <input id="${e.id}-lbl-inp" value="${e.label}" style="display:none;width:180px;padding:2px 4px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px" onblur="cerrarCampoEgr('${e.id}','lbl',false)" onclick="event.stopPropagation()">
+          ${uniSel ? `<span style="margin-left:8px">${uniSel}</span>` : ''}
+        </td>
+        <td class="r">
+          <span id="${e.id}-ref-disp" style="cursor:text;font-size:12px;color:var(--text3);border-bottom:1px dashed transparent" onmouseenter="this.style.borderColor='var(--text3)'" onmouseleave="this.style.borderColor='transparent'" onclick="event.stopPropagation();editRef('${e.id}')">${fmt(e.ref)}</span>
+          <input type="number" id="${e.id}-ref-inp" value="${e.ref}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px" onblur="cerrarRef('${e.id}')" oninput="calcEgresos()">
+        </td>
+        <td class="r">
+          <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
+            <input type="number" id="${e.id}-pct" placeholder="—" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctIndiv('${e.id}')">
+            <span style="font-size:11px;color:var(--text3)">%</span>
+          </div>
+        </td>
+        <td class="r">
+          <span id="${e.id}-disp" style="font-size:12.5px;font-weight:500">${fmt(e.ref)}</span>
+          <input type="number" id="${e.id}" value="${e.ref}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px" onblur="cerrarPres('${e.id}')" oninput="clearPct('${e.id}');calcEgresos()">
+        </td>
+        <td class="r" id="${e.id}-v" style="cursor:pointer" onclick="event.stopPropagation();editPres('${e.id}')">—</td>
+      </tr>`;
+}
+
+function getUnidadTotals() {
+  let ing = 0, gas = 0;
+  unidadesER.forEach(u => {
+    getUniIngIds(u.id).forEach(id => ing += getRecVal(id));
+    getUniGasIds(u.id).forEach(id => gas += getEgrVal(id));
+    gas += get511UnitTotal(u.id);
+  });
+  return {ing, gas, res: ing-gas};
+}
+
+
+// ─── INVERSIONES ───
+let invItems = [
+  {desc:'Notebooks / Tablets / PCs', cat:'Informática', qty:12, pu:2000000},
+  {desc:'Proyectores y Pantallas', cat:'Informática', qty:5, pu:2500000},
+  {desc:'Mobiliario Aulas / Pupitres', cat:'Mobiliario', qty:1, pu:12000000},
+  {desc:'Cámaras de Seguridad', cat:'Instalaciones', qty:1, pu:3000000},
+  {desc:'Mejoras Edilicias Varias', cat:'Obras', qty:1, pu:35000000},
+  {desc:'Obras Complejo La Ramada', cat:'Obras', qty:1, pu:15000000},
+  {desc:'Master Plan — Piletas y Vestuarios', cat:'Master Plan', qty:1, pu:30000000},
+];
+
+function renderInv() {
+  $('inv-body').innerHTML = invItems.map((it,i) => `
+    <tr>
+      <td><input value="${it.desc}" oninput="invItems[${i}].desc=this.value" style="width:100%;text-align:left"></td>
+      <td><input value="${it.cat}" oninput="invItems[${i}].cat=this.value" style="width:120px;text-align:left"></td>
+      <td class="r"><input type="number" value="${it.qty}" oninput="invItems[${i}].qty=+this.value;calcInv()" style="width:55px"></td>
+      <td class="r" style="white-space:nowrap">
+        <span id="inv-pu-disp-${i}" style="cursor:text;font-size:12.5px" onclick="editInvPu(${i})">${fmt(it.pu)}</span>
+        <input type="number" id="inv-pu-inp-${i}" value="${it.pu}" style="display:none;width:130px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px"
+          onblur="cerrarInvPu(${i})" oninput="invItems[${i}].pu=+this.value;calcInv()">
+      </td>
+      <td class="r" id="inv-row-${i}" style="font-weight:500;white-space:nowrap">${fmt(it.qty*it.pu)}</td>
+      <td><button onclick="delInv(${i})" style="border:none;background:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px">✕</button></td>
+    </tr>
+  `).join('');
+  calcInv();
+}
+
+function editInvPu(i) {
+  const disp = $('inv-pu-disp-'+i), inp = $('inv-pu-inp-'+i);
+  if (!disp||!inp) return;
+  disp.style.display='none'; inp.style.display='inline-block'; inp.focus(); inp.select();
+}
+function cerrarInvPu(i) {
+  const disp = $('inv-pu-disp-'+i), inp = $('inv-pu-inp-'+i);
+  if (!disp||!inp) return;
+  const v = parseFloat(inp.value)||0;
+  invItems[i].pu = v;
+  disp.textContent = fmt(v);
+  inp.style.display='none'; disp.style.display='inline';
+  calcInv();
+}
+
+function addInv() { invItems.push({desc:'Nueva inversión',cat:'',qty:1,pu:0}); renderInv(); }
+function delInv(i) { invItems.splice(i,1); renderInv(); }
+function calcInv() {
+  invItems.forEach((it,i) => { const el=$('inv-row-'+i); if(el) el.textContent=fmt(it.qty*it.pu); });
+  const tot = invItems.reduce((s,it)=>s+it.qty*it.pu,0);
+  $('inv-total').textContent = fmt(tot);
+  return tot;
+}
+function getTotalInv() { return invItems.reduce((s,it)=>s+it.qty*it.pu,0); }
+
+// ─── RESUMEN ───
+function calcResumen() {
+  const inicio    = calcInicio();
+  const recOpFull = calcRecursos(); // incluye ingresos de unidades
+  const uni       = getUnidadTotals();
+  const recOp     = recOpFull - uni.ing; // recursos operativos sin ingresos de unidades
+  const egr       = getTotalEgresos();
+  const inv       = getTotalInv();
+  const superavit = (recOp + uni.ing) - (egr + uni.gas);
+  const final     = inicio + superavit - inv;
+
+  // ── Helpers de renderizado ──
+  const color = v => v < 0 ? 'var(--danger)' : 'inherit';
+  const fv = (v, forceNeg) => {
+    const neg = forceNeg || v < 0;
+    const s = fmt(Math.abs(v));
+    return `<span style="font-weight:500;color:${neg?'var(--danger)':'inherit'}">${neg?'('+s+')':s}</span>`;
+  };
+
+  const lineSimple = (label, val, cls='') => `
+    <div class="resumen-line ${cls}" style="display:flex;justify-content:space-between;align-items:center">
+      <span>${label}</span>${fv(val)}
+    </div>`;
+
+  const lineGroup = (gid, label, val, neg=false) => `
+    <div class="resumen-line" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleResGrp('${gid}')">
+      <span style="display:flex;align-items:center;gap:6px">
+        <i id="rg-icon-${gid}" style="font-style:normal;font-size:10px;display:inline-block;transition:transform .15s;width:12px">▶</i>
+        ${label}
+      </span>${fv(val, neg)}
+    </div>
+    <div id="rg-rows-${gid}" style="display:none;background:var(--surface);border-left:3px solid var(--border2)">`;
+
+  const lineDetail = (cod, label, val, neg=false) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 16px 5px 28px;font-size:12px;color:var(--text2);border-bottom:0.5px solid var(--border)">
+      <span><span style="font-size:10px;color:var(--text3);margin-right:6px;font-family:'DM Mono',monospace">${cod}</span>${label}</span>
+      ${fv(val, neg)}
+    </div>`;
+
+  const lineClose = () => `</div>`;
+
+  const lineSection = label => `
+    <div style="background:var(--surface2);font-size:10px;color:var(--text3);letter-spacing:.06em;padding:5px 16px;text-transform:uppercase">${label}</div>`;
+
+  let html = '';
+
+  // ── INICIO ──
+  html += lineSimple('Posición Financiera al Inicio', inicio);
+
+  // ── INGRESOS ──
+  html += lineSection('Ingresos');
+
+  // IDs de ingresos que van en "Unidades de Negocio" — excluir de los rubros para no duplicar
+  const uniIngIds = getAllUniIngIds();
+
+  recGroups.forEach((g, gi) => {
+    const groupVal = g.items.reduce((s, r) => {
+      if (uniIngIds.has(r.id)) return s; // ya va en Ingresos Unidades
+      if (r.auto === 'mens') return s + calcCuotas().mensBruto;
+      if (r.auto === 'matr') return s + getMatriculas();
+      if (r.auto === 'beca') return s - calcCuotas().becaTotal;
+      if (r.total)           return s + num(r.id+'-m');
+      return s + num(r.id+'-m') * num(r.id+'-ms');
+    }, 0) + (recExtras[gi]||[]).reduce((s,r) => s + num(r.id+'-m') * num(r.id+'-ms'), 0);
+
+    if (groupVal === 0) return;
+
+    html += lineGroup('rec'+gi, `+ ${g.titulo}`, groupVal);
+    g.items.forEach(r => {
+      if (uniIngIds.has(r.id)) return; // omitir — ya aparece en Unidades
+      let v = 0;
+      if (r.auto === 'mens') v = calcCuotas().mensBruto;
+      else if (r.auto === 'matr') v = getMatriculas();
+      else if (r.auto === 'beca') v = -calcCuotas().becaTotal;
+      else if (r.total) v = num(r.id+'-m');
+      else v = num(r.id+'-m') * num(r.id+'-ms');
+      html += lineDetail(r.cod, r.label, v, v < 0);
+    });
+    (recExtras[gi]||[]).forEach(r => {
+      html += lineDetail(r.cod||'—', r.label, num(r.id+'-m') * num(r.id+'-ms'));
+    });
+    html += lineClose();
+  });
+
+  html += lineGroup('uni-ing', '+ Ingresos Unidades de Negocio', uni.ing);
+  unidadesER.forEach(u => {
+    html += lineDetail('', u.label, getUniIngIds(u.id).reduce((s,id)=>s+getRecVal(id),0));
+  });
+  html += lineClose();
+
+  html += lineSimple('= Total Recursos', recOp + uni.ing, 'subtot');
+
+  // ── EGRESOS ──
+  html += lineSection('Egresos');
+
+  // Calcular el total que va a mostrar cada grupo — debe sumar exactamente getTotalEgresos()
+  // Para 511: solo subcuenta Colegio (est/can/uni van en Costos Unidades)
+  // Para otros: valor normal del input
+  let sumaRubros = 0;
+
+  // IDs de cuentas que son gastos propios de unidades — van en línea separada
+  const uniGasIds = getAllUniGasIds();
+
+  egrGroups.forEach((g, gi) => {
+    const gItemsVal = g.items.reduce((s, e) => {
+      if (e.subs) return s + num(`${e.id}-col`); // SOLO colegio
+      if (uniGasIds.has(e.id)) return s; // gastos de unidades van aparte
+      return s + num(e.id);
+    }, 0);
+    const gExtrasVal = (egrExtras[gi]||[]).reduce((s,e) => s + num(e.id), 0);
+    const groupVal = gItemsVal + gExtrasVal;
+    if (groupVal === 0) return;
+
+    sumaRubros += groupVal;
+    html += lineGroup('egr'+gi, `− ${g.titulo}`, groupVal, true);
+    g.items.forEach(e => {
+      if (uniGasIds.has(e.id)) return; // omitir — va en Gastos Unidades
+      if (e.subs) {
+        const vCol = num(`${e.id}-col`);
+        if (vCol > 0) html += lineDetail(e.cod, `${e.label} — Colegio`, vCol, true);
+      } else {
+        const v = num(e.id);
+        if (v > 0) html += lineDetail(e.cod, e.label, v, true);
+      }
+    });
+    (egrExtras[gi]||[]).forEach(e => {
+      const v = num(e.id);
+      if (v > 0) html += lineDetail(e.cod||'—', e.label, v, true);
+    });
+    html += lineClose();
+  });
+
+  // ── Gastos Unidades de Negocio — igual que ingresos de unidades ──
+  const egrUni514Res = unidadesER.reduce((s,u) =>
+    s + getUniGasIds(u.id).reduce((ss,id) => ss + getEgrVal(id), 0), 0);
+  const suelUniRes = unidadesER.reduce((s,u) => s + get511UnitTotal(u.id), 0);
+  const totalGastosUni = egrUni514Res + suelUniRes;
+
+  html += lineGroup('uni-gas', '− Gastos Unidades de Negocio', totalGastosUni, true);
+  unidadesER.forEach(u => {
+    const gasOp  = getUniGasIds(u.id).reduce((s,id) => s + getEgrVal(id), 0);
+    const gasSue = get511UnitTotal(u.id);
+    const total  = gasOp + gasSue;
+    if (total > 0) {
+      html += lineDetail('514+511', u.label, total, true);
+    }
+  });
+  html += lineClose();
+
+  // Total Egresos = rubros operativos (sin 514 uni) + gastos unidades completos (514 + sueldos)
+  const totalEgrDisplay = sumaRubros + totalGastosUni;
+  html += lineSimple('= Total Egresos', -totalEgrDisplay, 'subtot');
+
+  // ── RESULTADO ──
+  // Colegio: ingresos propios - egresos propios (sin unidades)
+  const ingColegio   = recOp;
+  const egrColegio   = sumaRubros;
+  const resColegio   = ingColegio - egrColegio;
+
+  // Unidades de Negocio: ingresos uni - gastos uni (514 + sueldos propios)
+  const resUnidades  = uni.ing - totalGastosUni;
+
+  // Total consolidado
+  const superavitDisplay = resColegio + resUnidades;
+  const finalDisplay     = inicio + superavitDisplay - inv;
+
+  html += lineSection('Resultado del Ejercicio');
+
+  // Colegio
+  html += lineGroup('res-col', 'Superávit / Déficit — Colegio', resColegio, resColegio < 0);
+  html += lineDetail('', 'Ingresos operativos Colegio', ingColegio);
+  html += lineDetail('', 'Egresos operativos Colegio', -egrColegio, true);
+  html += lineClose();
+
+  // Unidades de Negocio
+  html += lineGroup('res-uni', 'Resultado — Unidades de Negocio', resUnidades, resUnidades < 0);
+  unidadesER.forEach(u => {
+    const uIng = getUniIngIds(u.id).reduce((s,id) => s + getRecVal(id), 0);
+    const uGas = getUniGasIds(u.id).reduce((s,id) => s + getEgrVal(id), 0) + get511UnitTotal(u.id);
+    const uRes = uIng - uGas;
+    html += lineDetail('', u.label, uRes, uRes < 0);
+  });
+  html += lineClose();
+
+  // Total
+  html += `<div class="resumen-line subtot" style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2)">
+    <span style="font-weight:500">= Superávit / Déficit Total del Ejercicio</span>
+    <span style="font-weight:500;font-size:15px;color:${superavitDisplay>=0?'var(--accent)':'var(--danger)'}">${superavitDisplay>=0?'':'-'}${fmt(Math.abs(superavitDisplay))}</span>
+  </div>`;
+
+  html += lineSimple('− Inversiones / Variación Capital de Trabajo', -inv);
+  html += lineSimple('Posición Financiera Final', finalDisplay, 'total');
+
+  $('resumen-lines').innerHTML = html;
+
+  // ── Métricas ──
+  $('met-resumen').innerHTML = `
+    <div class="metric"><div class="mlabel">Ingresos Colegio</div><div class="mval pos">${fmt(ingColegio)}</div></div>
+    <div class="metric"><div class="mlabel">Egresos Colegio</div><div class="mval neg">${fmt(egrColegio)}</div></div>
+    <div class="metric"><div class="mlabel" style="color:${resColegio>=0?'var(--accent)':'var(--danger)'}">Resultado Colegio</div><div class="mval ${resColegio>=0?'pos':'neg'}">${fmt(resColegio)}</div></div>
+    <div class="metric"><div class="mlabel" style="color:${resUnidades>=0?'var(--accent)':'var(--danger)'}">Resultado Unidades</div><div class="mval ${resUnidades>=0?'pos':'neg'}">${fmt(resUnidades)}</div></div>
+    <div class="metric" style="border:1.5px solid ${superavitDisplay>=0?'var(--accent)':'var(--danger)'}"><div class="mlabel">Resultado Total</div><div class="mval ${superavitDisplay>=0?'pos':'neg'}">${fmt(superavitDisplay)}</div></div>
+    <div class="metric"><div class="mlabel">Inversiones</div><div class="mval neg">${fmt(inv)}</div></div>
+    <div class="metric"><div class="mlabel">Posición Final</div><div class="mval ${finalDisplay>=0?'pos':'neg'}">${fmt(finalDisplay)}</div></div>
+  `;
+
+  // ── Reserva de Capital de Trabajo ──
+  // Calcular directamente igual que el Cuadro Resumen para garantizar el número correcto
+  const _egrCapital = (() => {
+    const suelUni511 = egrGroups[0].items.filter(e=>e.subs)
+      .reduce((s,e) => s + num(`${e.id}-est`) + num(`${e.id}-can`) + num(`${e.id}-uni`), 0);
+    let total = 0;
+    egrGroups.forEach((g,gi) => {
+      g.items.forEach(e => {
+        if (e.subs) total += unidades511.reduce((s,u) => s + num(`${e.id}-${u.key}`), 0);
+        else total += num(e.id);
+      });
+      (egrExtras[gi]||[]).forEach(e => total += num(e.id));
+    });
+    return total; // total COMPLETO incluyendo todos los sueldos
+  })();
+  const capitalTrabajo = Math.round(_egrCapital / 12);
+  const reservaInv   = getTotalInv();
+  const totalReservas = capitalTrabajo + reservaInv;
+  $('reservas-grid').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+      <div class="metric">
+        <div class="mlabel">Reserva de Capital de Trabajo</div>
+        <div class="mlabel" style="font-size:10px;margin-bottom:6px">1 mes de egresos totales presupuestados</div>
+        <div class="mval" style="font-size:20px">${fmt(capitalTrabajo)}</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">Reserva de Inversiones</div>
+        <div class="mlabel" style="font-size:10px;margin-bottom:6px">Total inversiones y bienes de uso</div>
+        <div class="mval" style="font-size:20px">${fmt(reservaInv)}</div>
+      </div>
+      <div class="metric" style="border:1.5px solid var(--accent)">
+        <div class="mlabel">Total Reservas Sugeridas</div>
+        <div class="mlabel" style="font-size:10px;margin-bottom:6px">Capital de Trabajo + Inversiones</div>
+        <div class="mval pos" style="font-size:22px">${fmt(totalReservas)}</div>
+      </div>
+    </div>`;
+}
+
+function toggleResGrp(gid) {
+  const rows = document.getElementById('rg-rows-' + gid);
+  const icon = document.getElementById('rg-icon-' + gid);
+  if (!rows) return;
+  const open = rows.style.display !== 'none';
+  rows.style.display = open ? 'none' : 'block';
+  if (icon) icon.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+// ─── PUNTO DE EQUILIBRIO ───
+let _peChart = null;
+
+function calcPE() {
+  const totalAlumnos = niveles.reduce((s,_,i) => s + num('nv-al-'+i), 0);
+  if (totalAlumnos === 0) return;
+
+  // ── Calcular directamente desde las fuentes de datos, no desde DOM ──
+  // Esto garantiza valores correctos independientemente del orden de ejecución
+
+  // Egresos: recalcular sumando directamente cada cuenta
+  const egrColegio = (() => {
+    let total = 0;
+    const suelUni511 = egrGroups[0].items.filter(e=>e.subs)
+      .reduce((s,e) => s + num(`${e.id}-est`) + num(`${e.id}-can`) + num(`${e.id}-uni`), 0);
+    egrGroups.forEach((g,gi) => {
+      g.items.forEach(e => {
+        if (e.subs) total += unidades511.reduce((s,u) => s + num(`${e.id}-${u.key}`), 0);
+        else total += num(e.id);
+      });
+      (egrExtras[gi]||[]).forEach(e => total += num(e.id));
+    });
+    return total - suelUni511; // sin sueldos de unidades
+  })();
+
+  // Sueldos propios de unidades
+  const suelUniTotal = unidadesER.reduce((s,u) => s + get511UnitTotal(u.id), 0);
+
+  // Ingresos de unidades
+  const uniIngIds = getAllUniIngIds();
+  const ingUni = unidadesER.reduce((s,u) =>
+    s + getUniIngIds(u.id).reduce((ss,id) => ss + getRecVal(id), 0), 0);
+
+  // Egresos de unidades — costos operativos
+  const egrUni514 = unidadesER.reduce((s,u) =>
+    s + getUniGasIds(u.id).reduce((ss,id) => ss + getEgrVal(id), 0), 0);
+
+  // Ingresos totales del Colegio (sin unidades)
+  const cuotaRes  = calcCuotas();
+  let ingColegio  = 0;
+  recGroups.forEach((g,gi) => {
+    g.items.forEach(r => {
+      if (uniIngIds.has(r.id)) return;
+      if (r.auto === 'mens')  ingColegio += cuotaRes.mensNeto; // neto de becas
+      else if (r.auto === 'matr') ingColegio += cuotaRes.matriculas;
+      else if (r.auto === 'beca') return; // ya descontado en mensNeto
+      else if (r.total) ingColegio += num(r.id+'-m');
+      else ingColegio += num(r.id+'-m') * num(r.id+'-ms');
+    });
+    (recExtras[gi]||[]).forEach(r => ingColegio += num(r.id+'-m') * num(r.id+'-ms'));
+  });
+
+  // ── Sin Unidades ──
+  // Egresos SOLO del Colegio = egrColegio − gastos 514 de unidades (ya en egrColegio)
+  // Los gastos operativos 514 (Uniformes/Est/Cantina/Lib) son costos DE las unidades
+  const egrTotalSin  = egrColegio - egrUni514;
+  const ingTotalSin  = ingColegio;
+  const resultadoSin = ingTotalSin - egrTotalSin;
+
+  // ── Con Unidades ──
+  // Ingresos: colegio + ingresos 414 de unidades
+  // Egresos: egrColegio (incluye 514) + sueldos propios de unidades (511-est/can/uni)
+  const ingTotalCon  = ingColegio + ingUni;
+  const egrTotalCon  = egrColegio + suelUniTotal;
+  const resultadoCon = ingTotalCon - egrTotalCon;
+
+  // ── Margen neto % ──
+  const margenSin = ingTotalSin > 0 ? resultadoSin / ingTotalSin : 0;
+  const margenCon = ingTotalCon > 0 ? resultadoCon / ingTotalCon : 0;
+
+  // ── Ingreso real promedio por alumno ──
+  const ingPorAlumnoSin = ingTotalSin / totalAlumnos;
+  const ingPorAlumnoCon = ingTotalCon / totalAlumnos;
+
+  // ── PE = Egresos / Ingreso por alumno (todos los costos son fijos) ──
+  const peSinUni = ingPorAlumnoSin > 0 ? Math.ceil(egrTotalSin / ingPorAlumnoSin) : 0;
+  const peConUni = ingPorAlumnoCon > 0 ? Math.ceil(egrTotalCon / ingPorAlumnoCon) : 0;
+
+  const fmtAl  = n => n.toLocaleString('es-AR') + ' alumnos';
+  const fmtPct = p => (p * 100).toFixed(1) + '%';
+  const fmtRes = v => v >= 0
+    ? `<span style="color:var(--accent)">✓ Superávit ${fmt(v)}</span>`
+    : `<span style="color:var(--danger)">✗ Déficit ${fmt(-v)}</span>`;
+  const colPct = p => p >= 0 ? 'var(--accent)' : 'var(--danger)';
+  const row = (lbl, val) =>
+    `<span style="color:var(--text3);font-size:11px">${lbl}</span><strong>${val}</strong>`;
+
+  // ── Métricas ──
+  $('met-pe').innerHTML = `
+    <div class="metric"><div class="mlabel">Alumnos Actuales</div>
+      <div class="mval">${totalAlumnos.toLocaleString('es-AR')}</div></div>
+    <div class="metric"><div class="mlabel">PE Sin Unidades</div>
+      <div class="mval ${peSinUni<=totalAlumnos?'pos':'neg'}">${fmtAl(peSinUni)}</div></div>
+    <div class="metric"><div class="mlabel">PE Con Unidades</div>
+      <div class="mval ${peConUni<=totalAlumnos?'pos':'neg'}">${fmtAl(peConUni)}</div></div>
+    <div class="metric"><div class="mlabel">Margen Neto Sin Uni</div>
+      <div class="mval" style="color:${colPct(margenSin)}">${fmtPct(margenSin)}</div></div>
+    <div class="metric"><div class="mlabel">Margen Neto Con Uni</div>
+      <div class="mval" style="color:${colPct(margenCon)}">${fmtPct(margenCon)}</div></div>
+  `;
+
+  const gs = 'display:grid;grid-template-columns:auto 1fr;gap:7px 16px;align-items:baseline';
+
+  $('pe-sin-uni').innerHTML = `<div style="${gs}">
+    ${row('Ingresos totales', fmt(ingTotalSin))}
+    ${row('Egresos totales', `<span style="color:var(--danger)">${fmt(egrTotalSin)}</span>`)}
+    ${row('Resultado neto', fmtRes(resultadoSin))}
+    ${row('Margen neto %', `<span style="font-size:18px;color:${colPct(margenSin)}">${fmtPct(margenSin)}</span>`)}
+    ${row('Ingreso / alumno / año', fmt(Math.round(ingPorAlumnoSin)))}
+    <span style="color:var(--text3)">──────</span><span></span>
+    ${row('Punto de Equilibrio', `<span style="font-size:20px;color:${peSinUni<=totalAlumnos?'var(--accent)':'var(--danger)'}">${fmtAl(peSinUni)}</span>`)}
+    ${row('Alumnos actuales', fmtAl(totalAlumnos))}
+    ${row('Margen en alumnos', `<span style="color:${totalAlumnos>=peSinUni?'var(--accent)':'var(--danger)'}">${totalAlumnos>=peSinUni?'+':''}${(totalAlumnos-peSinUni).toLocaleString('es-AR')} al.</span>`)}
+  </div>`;
+
+  $('pe-con-uni').innerHTML = `<div style="${gs}">
+    ${row('Ingresos totales', fmt(ingTotalCon))}
+    ${row('Egresos totales', `<span style="color:var(--danger)">${fmt(egrTotalCon)}</span>`)}
+    ${row('Resultado neto', fmtRes(resultadoCon))}
+    ${row('Margen neto %', `<span style="font-size:18px;color:${colPct(margenCon)}">${fmtPct(margenCon)}</span>`)}
+    ${row('Ingreso / alumno / año', fmt(Math.round(ingPorAlumnoCon)))}
+    <span style="color:var(--text3)">──────</span><span></span>
+    ${row('Punto de Equilibrio', `<span style="font-size:20px;color:${peConUni<=totalAlumnos?'var(--accent)':'var(--danger)'}">${fmtAl(peConUni)}</span>`)}
+    ${row('Alumnos actuales', fmtAl(totalAlumnos))}
+    ${row('Margen en alumnos', `<span style="color:${totalAlumnos>=peConUni?'var(--accent)':'var(--danger)'}">${totalAlumnos>=peConUni?'+':''}${(totalAlumnos-peConUni).toLocaleString('es-AR')} al.</span>`)}
+  </div>`;
+
+  // ── Gráfico ──
+  const maxAl = Math.max(totalAlumnos * 1.5, peSinUni * 1.3, peConUni * 1.3, 500);
+  const steps = 12;
+  const lbls  = Array.from({length: steps+1}, (_,i) => Math.round(maxAl * i / steps));
+  const resSin = lbls.map(al => Math.round(al * ingPorAlumnoSin - egrTotalSin));
+  const resCon = lbls.map(al => Math.round(al * ingPorAlumnoCon - egrTotalCon));
+
+  const canvas = $('pe-chart');
+  if (_peChart) { _peChart.destroy(); _peChart = null; }
+  _peChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: lbls.map(l => l.toLocaleString('es-AR')),
+      datasets: [
+        { label: 'Resultado Sin Unidades', data: resSin, borderColor: '#C45B4A', backgroundColor: 'rgba(196,91,74,0.07)', tension: 0.1, pointRadius: 2, fill: true },
+        { label: 'Resultado Con Unidades', data: resCon, borderColor: '#4A9E6A', backgroundColor: 'rgba(74,158,106,0.07)', tension: 0.1, pointRadius: 2, fill: true },
+        { label: 'Resultado = 0 (PE)', data: lbls.map(()=>0), borderColor:'#555', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position:'top', labels:{ font:{family:'DM Mono',size:11} } },
+        tooltip: { callbacks: {
+          title: ctx => `${ctx[0].label} alumnos`,
+          label: ctx => ` ${ctx.dataset.label}: $ ${ctx.raw.toLocaleString('es-AR')}`
+        }}
+      },
+      scales: {
+        y: { ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M', font:{family:'DM Mono',size:10} },
+             grid: { color: ctx => ctx.tick.value===0?'#555':'#eee', lineWidth: ctx=>ctx.tick.value===0?2:1 } },
+        x: { title:{display:true,text:'Cantidad de alumnos',font:{family:'DM Mono',size:10}},
+             ticks:{font:{family:'DM Mono',size:10}} }
+      }
+    }
+  });
+
+  $('pe-supuestos').innerHTML = `
+    <div style="padding:12px 16px;line-height:2">
+      · <strong>Todos los costos son fijos</strong> — PE = Egresos Totales ÷ Ingreso promedio por alumno<br>
+      · <strong>Ingreso por alumno</strong> = Ingresos Totales Presupuestados ÷ Alumnos actuales<br>
+      · <strong>Margen Neto %</strong> = Resultado Neto ÷ Ingresos Totales<br>
+      · <strong>Sin Unidades</strong>: solo ingresos y egresos del Colegio (netos de becas)<br>
+      · <strong>Con Unidades</strong>: todos los ingresos y todos los egresos del presupuesto<br>
+      · Se recalcula automáticamente con cada cambio en el presupuesto
+    </div>`;
+}
+
+function updateAll() {
+  calcInicio();
+  calcCuotas();
+  calcRecursos();
+  recalcCajaGen();
+  calcEgresos();
+  renderUnidadesER();
+  calcInv();
+  calcResumen();
+  calcPE();
+  $('last-saved').textContent = 'actualizado ' + new Date().toLocaleTimeString('es-AR');
+}
+
+function imprimirApp() {
+  // 1. Expandir todos los acordeones
+  document.querySelectorAll('.acc-group').forEach(hdr => {
+    hdr.classList.add('open');
+    const gid = hdr.dataset.group;
+    document.querySelectorAll(`.acc-item[data-group="${gid}"]`).forEach(r => r.classList.remove('hidden'));
+  });
+  // 2. Asegurar que todos los paneles estén visibles (temporalmente)
+  const panels = document.querySelectorAll('.panel');
+  panels.forEach(p => p.classList.add('active'));
+  // 3. Imprimir
+  window.print();
+  // 4. Restaurar: dejar solo el panel activo original
+  panels.forEach(p => p.classList.remove('active'));
+  const activeNav = document.querySelector('.nav-item.active');
+  if (activeNav) {
+    const tabId = 'tab-' + activeNav.getAttribute('onclick').match(/goTab\('(\w+)'/)?.[1];
+    const activePanel = document.getElementById(tabId);
+    if (activePanel) activePanel.classList.add('active');
+  }
+}
+
+function exportarCSV() {
+  const rows = [];
+  const sep = ';';
+  const q = v => '"' + String(v).replace(/"/g,'""') + '"';
+  const n = v => Math.round(v);
+
+  // ── Encabezado ──
+  rows.push([q('Colegio Ssmo. Rosario — Monteros'), q('Presupuesto 2026'), q('Período: 01/03/2026 - 28/02/2027')].join(sep));
+  rows.push([q('Generado:'), q(new Date().toLocaleString('es-AR'))].join(sep));
+  rows.push([''].join(sep));
+
+  // ── POSICIÓN INICIAL ──
+  rows.push([q('=== POSICIÓN FINANCIERA AL INICIO ===')].join(sep));
+  rows.push([q('Concepto'), q('Importe')].join(sep));
+  const acFields2 = ['caja','me','vc','fr','tc','rapi','banco','fci','apest','otras'];
+  const acLabels = ['Caja','Moneda Extranjera','Valores al Cobro','Fondos a Rendir','Tarjeta de Crédito','Rapipago/PMC','Bancos','Plazo Fijo/FCI','Aportes Est. a Cobrar','Otras Cuentas'];
+  acFields2.forEach((k,i) => rows.push([q(acLabels[i]), n(num('ac-'+k))].join(sep)));
+  const ac = acFields2.reduce((s,k)=>s+num('ac-'+k),0);
+  rows.push([q('TOTAL ACTIVO CORRIENTE'), n(ac)].join(sep));
+  rows.push([''].join(sep));
+  const pcFields2 = ['sue','apo','ret','hon','fdt','rpe','pro','eco'];
+  const pcLabels = ['Sueldos a Pagar','Aportes y Contrib.','Retenciones Fiscales','Honorarios a Pagar','Fondos de Terceros','Retenciones Personal','Proveedores','Aporte Economato'];
+  pcFields2.forEach((k,i) => rows.push([q(pcLabels[i]), n(num('pc-'+k))].join(sep)));
+  const pc = pcFields2.reduce((s,k)=>s+num('pc-'+k),0);
+  rows.push([q('TOTAL PASIVO CORRIENTE'), n(pc)].join(sep));
+  rows.push([q('LIQUIDEZ NETA AL INICIO'), n(ac-pc)].join(sep));
+  rows.push([''].join(sep));
+
+  // ── CUOTAS ──
+  rows.push([q('=== CUOTA Y MATRÍCULA ===')].join(sep));
+  rows.push([q('Nivel'),q('Alumnos'),q('Cuota Base'),q('Cuota Complejo'),q('Matrícula'),q('Total Mensualidades Neto')].join(sep));
+  const mults = getMults();
+  niveles.forEach((_,i) => {
+    const al=num('nv-al-'+i), cu=num('nv-cu-'+i), cc=num('nv-cc-'+i)||0;
+    const beca=num('pBeca')/100;
+    let tot=0; mults.forEach(m => tot += Math.round(al*(cu*m+cc)));
+    const matr = Math.round(cu*mults[9])*2*al;
+    rows.push([q(niveles[i].n), al, n(cu), n(cc), n(matr), n(tot*(1-beca))].join(sep));
+  });
+  const cuotaRes = calcCuotas();
+  rows.push([q('MENSUALIDADES BRUTAS'),'','','','', n(cuotaRes.mensBruto)].join(sep));
+  rows.push([q('BECAS / DESCUENTOS'),'','','','', n(-cuotaRes.becaTotal)].join(sep));
+  rows.push([q('MENSUALIDADES NETAS'),'','','','', n(cuotaRes.mensNeto)].join(sep));
+  rows.push([q('MATRÍCULAS'),'','','','', n(cuotaRes.matriculas)].join(sep));
+  rows.push([''].join(sep));
+
+  // ── RECURSOS ──
+  rows.push([q('=== RECURSOS OPERATIVOS ===')].join(sep));
+  rows.push([q('Grupo'), q('Código'), q('Concepto'), q('Importe Mensual'), q('Meses'), q('Total Anual')].join(sep));
+  recGroups.forEach(g => {
+    rows.push([q(g.titulo),'','','','',''].join(sep));
+    g.items.forEach(r => {
+      let val=0, men=0, ms=1;
+      if (r.auto==='mens') { val=cuotaRes.mensBruto; men=Math.round(val/10); ms=10; }
+      else if (r.auto==='matr') { val=cuotaRes.matriculas; men=n(val); ms=1; }
+      else if (r.auto==='beca') { val=-cuotaRes.becaTotal; men=n(val); ms=1; }
+      else if (r.total) { val=num(r.id+'-m'); men=n(val); ms=1; }
+      else { men=num(r.id+'-m'); ms=num(r.id+'-ms'); val=men*ms; }
+      rows.push(['', q(r.cod), q(r.label), n(men), ms, n(val)].join(sep));
+    });
+  });
+  rows.push([q('TOTAL RECURSOS'),'','','','', n(calcRecursos())].join(sep));
+  rows.push([''].join(sep));
+
+  // ── EGRESOS ──
+  rows.push([q('=== EGRESOS OPERATIVOS ===')].join(sep));
+  rows.push([q('Grupo'), q('Código'), q('Concepto'), q('Referencia'), q('Presupuesto 2026'), q('Variación %')].join(sep));
+  egrGroups.forEach(g => {
+    rows.push([q(g.titulo),'','','','',''].join(sep));
+    g.items.forEach(e => {
+      const v = num(e.id);
+      const p = e.ref>0 ? ((v-e.ref)/e.ref*100).toFixed(1) : 0;
+      rows.push(['', q(e.cod), q(e.label), n(e.ref), n(v), p].join(sep));
+    });
+  });
+  rows.push([q('TOTAL EGRESOS'),'','','', n(getTotalEgresos()),''].join(sep));
+  rows.push([''].join(sep));
+
+  // ── INVERSIONES ──
+  rows.push([q('=== INVERSIONES Y BIENES DE USO ===')].join(sep));
+  rows.push([q('Descripción'), q('Categoría'), q('Cantidad'), q('P. Unitario'), q('Total')].join(sep));
+  invItems.forEach(it => rows.push([q(it.desc), q(it.cat), it.qty, n(it.pu), n(it.qty*it.pu)].join(sep)));
+  rows.push([q('TOTAL INVERSIONES'),'','','', n(getTotalInv())].join(sep));
+  rows.push([''].join(sep));
+
+  // ── RESUMEN ──
+  rows.push([q('=== CUADRO RESUMEN — POSICIÓN FINANCIERA ===')].join(sep));
+  rows.push([q('Concepto'), q('Importe')].join(sep));
+  const recOp2=calcRecursos(), egr2=getTotalEgresos(), uni2=getUnidadTotals(), inv2=getTotalInv();
+  const inicio2=ac-pc;
+  const egrUni514csv = unidadesER.reduce((s,u) => s + getUniGasIds(u.id).reduce((ss,id)=>ss+getEgrVal(id),0), 0);
+  const suelUniCsv   = unidadesER.reduce((s,u) => s + get511UnitTotal(u.id), 0);
+  const totalGasUniCsv = egrUni514csv + suelUniCsv;
+  const ingColCsv  = recOp2 - uni2.ing;
+  const egrColCsv  = egr2 - totalGasUniCsv; // aprox
+  const resColCsv  = ingColCsv - egrColCsv;
+  const resUniCsv  = uni2.ing - totalGasUniCsv;
+  const totalRes   = resColCsv + resUniCsv;
+  const final2     = inicio2 + totalRes - inv2;
+  rows.push([q('Posición Financiera al Inicio'), n(inicio2)].join(sep));
+  rows.push([q('Ingresos Colegio'), n(ingColCsv)].join(sep));
+  rows.push([q('Egresos Colegio'), n(-egrColCsv)].join(sep));
+  rows.push([q('Resultado Colegio'), n(resColCsv)].join(sep));
+  rows.push([q('Ingresos Unidades de Negocio'), n(uni2.ing)].join(sep));
+  rows.push([q('Gastos Unidades de Negocio'), n(-totalGasUniCsv)].join(sep));
+  rows.push([q('Resultado Unidades de Negocio'), n(resUniCsv)].join(sep));
+  rows.push([q('RESULTADO TOTAL DEL EJERCICIO'), n(totalRes)].join(sep));
+  rows.push([q('Inversiones'), n(-inv2)].join(sep));
+  rows.push([q('POSICIÓN FINANCIERA FINAL'), n(final2)].join(sep));
+
+  // ── Descargar ──
+  const bom = '\uFEFF'; // BOM para que Excel reconozca UTF-8
+  const blob = new Blob([bom + rows.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'presupuesto_CSR_2026.csv';
+  a.click();
+}
+
+// ─── FIREBASE SYNC ───
+let _fbDebounce = null;
+window._applying = false; // usar window. para que el módulo Firebase pueda leerlo
+
+// Safety: si _applying queda trabado, liberarlo cada 6s
+setInterval(() => { window._applying = false; }, 6000);
+
+function setSyncStatus(state) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  const box = document.getElementById('sync-status');
+  if (!dot || !txt || !box) return;
+  if (state === 'live') {
+    box.style.background = '#e8f5e9'; box.style.color = '#2e7d32';
+    dot.style.background = '#4caf50'; dot.style.animation = 'pulse-green 2s infinite';
+    txt.textContent = 'en vivo';
+  } else if (state === 'saving') {
+    box.style.background = '#fff8e1'; box.style.color = '#f57f17';
+    dot.style.background = '#ffa726'; dot.style.animation = 'pulse-orange 1s infinite';
+    txt.textContent = 'guardando...';
+  } else if (state === 'connecting') {
+    box.style.background = 'var(--surface2)'; box.style.color = 'var(--text3)';
+    dot.style.background = '#aaa'; dot.style.animation = 'pulse-green 2s infinite';
+    txt.textContent = 'conectando...';
+  } else if (state === 'error') {
+    box.style.background = '#ffebee'; box.style.color = '#c62828';
+    dot.style.background = '#ef5350'; dot.style.animation = 'none';
+    txt.textContent = 'sin conexión';
+  }
+}
+
+function mostrarAvisoVersionAnterior(data) {
+  // Mostrar banner prominente cuando hay datos de versión anterior en Firebase
+  const banner = document.createElement('div');
+  banner.id = 'version-banner';
+  banner.style.cssText = `
+    position:fixed;top:0;left:0;right:0;z-index:9999;
+    background:#7A5C1A;color:#fff;
+    padding:12px 20px;
+    display:flex;align-items:center;gap:12px;
+    font-family:'DM Mono',monospace;font-size:12px;
+  `;
+  banner.innerHTML = `
+    <span>⚠️ <strong>Nueva versión del sistema.</strong> Hay datos guardados de una versión anterior.</span>
+    <button onclick="cargarDatosAnteriores()" style="
+      background:#fff;color:#7A5C1A;border:none;padding:6px 14px;
+      border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;font-weight:500">
+      📂 Restaurar datos anteriores
+    </button>
+    <button onclick="descartarDatosAnteriores()" style="
+      background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.5);
+      padding:6px 14px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px">
+      Arrancar desde cero
+    </button>
+  `;
+  document.body.prepend(banner);
+  window._pendingOldData = data;
+}
+
+async function cargarDatosAnteriores() {
+  if (!window._pendingOldData) return;
+  const data = window._pendingOldData;
+  window._pendingOldData = null;
+  const banner = document.getElementById('version-banner');
+  if (banner) banner.remove();
+
+  // Aplicar estado
+  window._applying = true;
+  aplicarEstado(data);
+  await new Promise(r => setTimeout(r, 1200));
+  window._applying = false;
+
+  // Guardar en Firebase con la versión nueva
+  setSyncStatus('saving');
+  try {
+    const estado = capturarEstado();
+    if (window._fbSave) await window._fbSave(estado);
+    setSyncStatus('live');
+  } catch(e) {
+    setSyncStatus('error');
+  }
+}
+
+async function descartarDatosAnteriores() {
+  window._pendingOldData = null;
+  const banner = document.getElementById('version-banner');
+  if (banner) banner.remove();
+
+  // Guardar estado actual (defaults) en Firebase
+  setSyncStatus('saving');
+  try {
+    const estado = capturarEstado();
+    if (window._fbSave) await window._fbSave(estado);
+    setSyncStatus('live');
+  } catch(e) {
+    setSyncStatus('error');
+  }
+}
+
+async function forzarSincronizacion() {
+  if (!window._fbForceSync) return;
+  const btn = document.querySelector('[onclick="forzarSincronizacion()"]');
+  if (btn) { btn.textContent = '⏳ enviando...'; btn.disabled = true; }
+  setSyncStatus('saving');
+  try {
+    await window._fbForceSync();
+    if (btn) { btn.textContent = '✓ enviado'; }
+    setSyncStatus('live');
+    setTimeout(() => {
+      if (btn) { btn.textContent = '🔄 sincronizar'; btn.disabled = false; }
+    }, 2000);
+  } catch(e) {
+    if (btn) { btn.textContent = '🔄 sincronizar'; btn.disabled = false; }
+    setSyncStatus('error');
+  }
+}
+
+function fbAutoSave() {
+  if (window._applying) return;
+  clearTimeout(_fbDebounce);
+  _fbDebounce = setTimeout(async () => {
+    if (window._applying) return;
+    if (!window._fbSave) return;
+    setSyncStatus('saving');
+    try {
+      const estado = capturarEstado();
+      await window._fbSave(estado);
+      setSyncStatus('live');
+    } catch(e) {
+      setSyncStatus('error');
+    }
+  }, 1500);
+}
+
+function capturarEstado() {
+  const estado = { v: 2, ts: new Date().toISOString(), _htmlVersion: window._getHtmlVersion ? window._getHtmlVersion() : 1 };
+  const inputs = document.querySelectorAll('input[id], [contenteditable][id]');
+  estado.inputs = {};
+  inputs.forEach(el => {
+    if (!el.id || el.type === 'file') return;
+    if (el.tagName === 'INPUT') estado.inputs[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+    else estado.inputs[el.id] = el.innerText;
+  });
+  estado.niveles = niveles.map((nv, i) => ({
+    n: nv.n, al: num('nv-al-'+i), cu: num('nv-cu-'+i), cc: num('nv-cc-'+i)||0
+  }));
+  estado.invItems = invItems.map(it => ({...it}));
+  estado.nombreColegio = document.getElementById('nombre-colegio-disp')?.textContent || '';
+  estado.notas = document.getElementById('notas')?.innerText || '';
+  estado.uerVals = {...uerVals};
+  estado.subs511 = {};
+  egrGroups[0].items.filter(e=>e.subs).forEach(e => {
+    unidades511.forEach(u => {
+      const key = `${e.id}-${u.key}`;
+      estado.subs511[key] = num(key);
+    });
+  });
+  estado.responsables = {};
+  respIds.forEach(id => {
+    const el = document.getElementById(id+'-name');
+    if (el && !el.classList.contains('empty')) estado.responsables[id] = el.textContent;
+  });
+  // Cuentas extras personalizadas
+  estado.recExtras = JSON.parse(JSON.stringify(recExtras));
+  estado.egrExtras = JSON.parse(JSON.stringify(egrExtras));
+  estado._customSeq = _customSeq;
+  // Guardar refs, labels y códigos editables de todas las cuentas de egresos
+  estado.egrLabels = {};
+  egrData.forEach(e => {
+    estado.egrLabels[e.id] = { cod: e.cod, label: e.label };
+  });
+  estado.refs511 = {};
+  egrGroups[0].items.filter(e=>e.subs).forEach(e => {
+    estado.refs511[e.id] = e.ref;
+  });
+  // Guardar asignaciones de unidad de cuentas base (recGroups y egrGroups)
+  estado.recUnidades = {};
+  recGroups.forEach(g => g.items.forEach(r => { if (r.unidad) estado.recUnidades[r.id] = r.unidad; }));
+  estado.egrUnidades = {};
+  egrGroups.forEach(g => g.items.forEach(e => { if (e.unidad) estado.egrUnidades[e.id] = e.unidad; }));
+  // Guardar totales editados de recursos (tot-inp)
+  estado.recTotales = {};
+  recGroups.forEach(g => g.items.forEach(r => {
+    if (!r.auto) {
+      const el = $(r.id+'-tot-inp');
+      if (el) estado.recTotales[r.id] = parseFloat(el.value)||0;
+    }
+  }));
+  return estado;
+}
+
+// Exponer restaurador para Firebase listener — ya definido arriba en Firebase Sync
+
+
+function aplicarEstado(estado) {
+  if (!estado || !estado.v) return;
+
+  // 1. Nombre del colegio
+  if (estado.nombreColegio) {
+    const disp = document.getElementById('nombre-colegio-disp');
+    const inp  = document.getElementById('nombre-colegio-inp');
+    if (disp) disp.textContent = estado.nombreColegio;
+    if (inp)  inp.value = estado.nombreColegio;
+  }
+
+  // 2. Notas
+  if (estado.notas !== undefined) {
+    const n = document.getElementById('notas');
+    if (n) n.innerText = estado.notas;
+  }
+
+  // 3. Niveles de cuota
+  if (estado.niveles) {
+    niveles.length = 0;
+    estado.niveles.forEach(nv => niveles.push({...nv}));
+    renderCuotaBody();
+    niveles.forEach((nv,i) => {
+      const al=$('nv-al-'+i), cu=$('nv-cu-'+i), cc=$('nv-cc-'+i);
+      if(al) al.value=nv.al; if(cu) cu.value=nv.cu; if(cc) cc.value=nv.cc||0;
+      const dcu=$('nv-cu-disp-'+i), dcc=$('nv-cc-disp-'+i);
+      if(dcu) dcu.textContent=fmt(nv.cu); if(dcc) dcc.textContent=fmt(nv.cc||0);
+    });
+  }
+
+  // 4. Inversiones
+  if (estado.invItems) {
+    invItems.length = 0;
+    estado.invItems.forEach(it => invItems.push({...it}));
+    renderInv();
+  }
+
+  // 5. Extras de recursos y egresos — ANTES de initRecursos/initEgresos
+  if (estado.recExtras) {
+    Object.keys(recExtras).forEach(k => delete recExtras[k]);
+    Object.keys(estado.recExtras).forEach(gi => { recExtras[gi] = estado.recExtras[gi].map(r=>({...r})); });
+  }
+  if (estado.egrExtras) {
+    Object.keys(egrExtras).forEach(k => delete egrExtras[k]);
+    Object.keys(estado.egrExtras).forEach(gi => { egrExtras[gi] = estado.egrExtras[gi].map(e=>({...e})); });
+  }
+  if (estado._customSeq) _customSeq = estado._customSeq;
+
+  // 6. Re-renderizar tablas con extras ya cargados
+  initRecursos();
+  initEgresos();
+
+  // 7. Cargar todos los inputs (DESPUÉS del render, para que los elementos existan en el DOM)
+  if (estado.inputs) {
+    Object.entries(estado.inputs).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (!el || el.type === 'file') return;
+      if (el.tagName === 'INPUT') el.value = val;
+    });
+  }
+
+  // 8. Actualizar displays de campos formateados de inicio
+  [...acFields, ...pcFields].forEach(f => {
+    const inp=$(f.id), disp=$(f.id+'-disp');
+    if(inp&&disp) disp.textContent = fmt(parseFloat(inp.value)||0);
+  });
+
+  // 9. Sub-cuentas 511
+  if (estado.subs511) {
+    Object.entries(estado.subs511).forEach(([key, val]) => {
+      const inp=$(key), disp=$(key+'-disp');
+      if(inp) inp.value=val; if(disp) disp.textContent=fmt(val);
+    });
+  }
+
+  // 10. uerVals
+  if (estado.uerVals) Object.assign(uerVals, estado.uerVals);
+
+  // 10c. Restaurar asignaciones de unidad de cuentas base
+  if (estado.recUnidades) {
+    recGroups.forEach(g => g.items.forEach(r => {
+      if (estado.recUnidades[r.id] !== undefined) r.unidad = estado.recUnidades[r.id];
+    }));
+  }
+  if (estado.egrUnidades) {
+    egrGroups.forEach(g => g.items.forEach(e => {
+      if (estado.egrUnidades[e.id] !== undefined) e.unidad = estado.egrUnidades[e.id];
+    }));
+  }
+  // 10d. Restaurar totales editados de recursos
+  if (estado.recTotales) {
+    Object.entries(estado.recTotales).forEach(([id, val]) => {
+      const el=$(id+'-tot-inp'), disp=$(id+'-disp');
+      if(el) el.value=val;
+      if(disp) disp.textContent=fmt(val);
+    });
+  }
+  if (estado.egrLabels) {
+    egrData.forEach(e => {
+      const saved = estado.egrLabels[e.id];
+      if (!saved) return;
+      if (saved.cod)   { e.cod   = saved.cod;   const d=$(e.id+'-cod-disp'), i=$(e.id+'-cod-inp'); if(d)d.textContent=saved.cod; if(i)i.value=saved.cod; }
+      if (saved.label) { e.label = saved.label;  const d=$(e.id+'-lbl-disp'), i=$(e.id+'-lbl-inp'); if(d)d.textContent=saved.label; if(i)i.value=saved.label; }
+    });
+  }
+  if (estado.refs511) {
+    egrGroups[0].items.filter(e=>e.subs).forEach(e => {
+      if (estado.refs511[e.id] !== undefined) {
+        e.ref = estado.refs511[e.id];
+        const disp = $(e.id+'-ref-disp'), inp = $(e.id+'-ref-inp');
+        if (disp) disp.textContent = fmt(e.ref);
+        if (inp)  inp.value = e.ref;
+      }
+    });
+  }
+
+  // 11. Responsables
+  if (estado.responsables) {
+    Object.entries(estado.responsables).forEach(([id, val]) => {
+      const el = document.getElementById(id+'-name');
+      if(el&&val) { el.textContent=val; el.classList.remove('empty'); }
+    });
+  }
+
+  // 11b. Re-renderizar unidades de negocio con asignaciones restauradas
+  initUnidadesER();
+
+  // 12. Recalcular todo
+  updateAll();
+
+  // 13. Sincronizar displays de egresos (después del updateAll)
+  egrData.forEach(e => {
+    if(e.subs) return;
+    const inp=$(e.id), disp=$(e.id+'-disp');
+    if(inp&&disp&&inp.style.display==='none') disp.textContent=fmt(parseFloat(inp.value)||0);
+    const rd=$(e.id+'-ref-disp'), ri=$(e.id+'-ref-inp');
+    if(rd&&ri) rd.textContent=fmt(parseFloat(ri.value)||0);
+  });
+  // Extras de egresos
+  Object.values(egrExtras).flat().forEach(e => {
+    const inp=$(e.id), disp=$(e.id+'-disp');
+    if(inp&&disp&&inp.style.display==='none') disp.textContent=fmt(parseFloat(inp.value)||0);
+    const rd=$(e.id+'-ref-disp'), ri=$(e.id+'-ref-inp');
+    if(rd&&ri) rd.textContent=fmt(parseFloat(ri.value)||0);
+  });
+}
+
+// ─── INIT ───
+initInicio();
+renderCuotaBody();
+initRecursos();
+initEgresos();
+initUnidadesER();
+initResponsables();
+renderInv();
+updateAll();
+
+// El onSnapshot de Firebase se encarga de la carga inicial y del tiempo real
+// Solo necesitamos marcar _appReady después de que el DOM esté listo
+// El onSnapshot ya está escuchando — cuando llegan los datos los aplica
+setTimeout(() => {
+  window._appReady = true;
+  setSyncStatus('live');
+}, 2000); // 2s para que onSnapshot haga la carga inicial primero
+</script>
+</body>
+</html>
