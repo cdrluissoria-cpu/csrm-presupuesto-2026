@@ -26,7 +26,7 @@
   const analytics = getAnalytics(app);
   const db        = getFirestore(app);
   // Colección separada para Colegio Ssmo. Rosario (distinta de presupuesto CSC)
-  const DOC = doc(db, 'presupuesto_csrm', '2026');
+  const DOC = doc(db, 'presupuesto_csr', '2026');
 
   const HTML_VERSION = 1;
   window._getHtmlVersion = () => HTML_VERSION;
@@ -99,20 +99,20 @@
 :root {
   --bg: #F5F3EE;
   --surface: #FDFCF9;
-  --surface2: #F0EDE6;
-  --border: #DDD9CF;
-  --border2: #C8C3B5;
-  --text: #1A1815;
-  --text2: #6B6558;
-  --text3: #A09B8E;
-  --accent: #2D5A3D;
-  --accent-lt: #E8F0EB;
+  --surface2: #EEF0F5;
+  --border: #D0D5E0;
+  --border2: #B0B8CC;
+  --text: #0F1E3D;
+  --text2: #3D4F72;
+  --text3: #7A88A8;
+  --accent: #1A5276;
+  --accent-lt: #E3EDF7;
   --danger: #8B2E2E;
   --danger-lt: #F5E8E8;
   --warn: #7A5C1A;
   --warn-lt: #F7F0E0;
-  --info: #1A3D5A;
-  --info-lt: #E4EDF5;
+  --info: #0B3D6B;
+  --info-lt: #DCEAF7;
   --radius: 6px;
   --radius-lg: 10px;
 }
@@ -145,7 +145,7 @@ body {
 }
 .header span {
   font-size: 11px;
-  color: #9B9589;
+  color: #8BAFD4;
   letter-spacing: .06em;
 }
 .header-right {
@@ -154,12 +154,12 @@ body {
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: #9B9589;
+  color: #8BAFD4;
 }
 .status-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #4A9E6A;
+  background: #5C9BD6;
   display: inline-block;
 }
 
@@ -425,7 +425,7 @@ tr.row-group td {
   color: var(--bg);
   border-color: var(--text);
 }
-.btn-dark:hover { background: #333; }
+.btn-dark:hover { background: #1a2f5a; }
 .btn-accent {
   background: var(--accent);
   color: white;
@@ -475,23 +475,23 @@ tr.row-group td {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  background: var(--warn-lt);
-  border: 1px solid #DDCB8A;
+  background: var(--info-lt);
+  border: 1px solid var(--border2);
   border-radius: var(--radius);
   margin-bottom: 14px;
   font-size: 12px;
-  color: var(--warn);
+  color: var(--info);
   flex-wrap: wrap;
 }
 .inc-bar input {
   width: 70px;
   padding: 5px 8px;
-  border: 1px solid #DDCB8A;
+  border: 1px solid var(--border2);
   border-radius: var(--radius);
   background: white;
   font-family: 'DM Mono', monospace;
   font-size: 12px;
-  color: var(--warn);
+  color: var(--info);
 }
 
 /* FOOTER */
@@ -568,7 +568,7 @@ tr.row-group td {
   input[type="hidden"] { display: none !important; }
 
   /* ── Layout base ── */
-  body { font-size: 11px; background: white !important; color: #1A1815 !important; }
+  body { font-size: 11px; background: white !important; color: #0F1E3D !important; }
   .shell { display: block !important; }
   .main { padding: 0 !important; overflow: visible !important; }
   .header { position: static !important; padding: 8px 0 6px; margin-bottom: 4px; border-bottom: 1px solid #ccc; }
@@ -629,25 +629,25 @@ tr.row-group td {
   tr.acc-item.hidden { display: table-row !important; }
   tr.acc-item td { padding-left: 20px !important; }
   tr.acc-group { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  tr.acc-group td { background: #1A1815 !important; color: #F5F3EE !important; font-size: 9.5px !important; padding: 5px 10px !important; }
+  tr.acc-group td { background: #0F1E3D !important; color: #F5F3EE !important; font-size: 9.5px !important; padding: 5px 10px !important; }
 
   /* ── Tablas generales ── */
   table { font-size: 10px; }
   thead th { font-size: 9px; padding: 4px 8px; border-bottom: 1px solid #ccc; }
   tbody td { padding: 4px 8px; border-bottom: 0.5px solid #eee; }
   tr.row-sub td { background: #F0EDE6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  tr.row-total td { background: #1A1815 !important; color: #F5F3EE !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  tr.row-total td { background: #0F1E3D !important; color: #F5F3EE !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* ── Estado de Resultado (Unidades) ── */
   .er-table td { padding: 5px 10px; font-size: 10px; }
   .er-table .er-group { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #F0EDE6 !important; }
-  .er-table .er-total td { background: #1A1815 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .er-table .er-total td { background: #0F1E3D !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .er-table .er-sub td { background: #E4EDF5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .er-unit-title { font-size: 14px; margin: 8px 0 4px; }
 
   /* ── Resumen: líneas ── */
   .resumen-line { padding: 6px 12px; font-size: 11px; }
-  .resumen-line.total { background: #1A1815 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .resumen-line.total { background: #0F1E3D !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .resumen-line.subtot { background: #F0EDE6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   /* ── Notas: contenteditable como texto ── */
@@ -684,7 +684,7 @@ tr.acc-group {
   cursor: pointer;
   user-select: none;
 }
-tr.acc-group:hover td { background: #2a2724 !important; color: var(--bg) !important; }
+tr.acc-group:hover td { background: #1a2f5a !important; color: var(--bg) !important; }
 tr.acc-group td {
   background: var(--text) !important;
   color: var(--bg) !important;
@@ -728,25 +728,25 @@ tr.acc-subtotal td {
 
 <div class="header">
   <div style="display:flex;flex-direction:column;gap:2px">
-    <div style="font-size:10px;color:#666;letter-spacing:.08em;text-transform:uppercase">Sistema de Gestión Presupuestaria · Colegios</div>
+    <div style="font-size:10px;color:#8BAFD4;letter-spacing:.08em;text-transform:uppercase">Sistema de Gestión Presupuestaria · Colegios</div>
     <h1 id="nombre-colegio-disp" style="cursor:text" onclick="editNombre()" title="Clic para editar">Colegio Ssmo. Rosario</h1>
-    <input id="nombre-colegio-inp" type="text" value="Colegio Ssmo. Rosario" style="display:none;font-family:'Fraunces',serif;font-size:20px;font-weight:300;background:transparent;border:none;border-bottom:1px solid #666;color:var(--bg);outline:none;width:320px" onblur="cerrarNombre()" onkeydown="if(event.key==='Enter')this.blur()">
+    <input id="nombre-colegio-inp" type="text" value="Colegio Ssmo. Rosario" style="display:none;font-family:'Fraunces',serif;font-size:20px;font-weight:300;background:transparent;border:none;border-bottom:1px solid #8BAFD4;color:var(--bg);outline:none;width:320px" onblur="cerrarNombre()" onkeydown="if(event.key==='Enter')this.blur()">
   </div>
   <span id="header-periodo">PRESUPUESTO 2026 · PERÍODO MAR 2026 – FEB 2027</span>
   <div class="header-right">
     <span class="status-dot"></span>
     <span id="last-saved" style="font-size:11px;color:var(--text3)">conectando...</span>
-    <span id="sync-status" style="font-size:11px;padding:3px 10px;border-radius:12px;background:#e8f5e9;color:#2e7d32;font-weight:500;display:inline-flex;align-items:center;gap:5px">
-      <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:#4caf50;display:inline-block;animation:pulse-green 2s infinite"></span>
+    <span id="sync-status" style="font-size:11px;padding:3px 10px;border-radius:12px;background:#D6E8F7;color:#1A5276;font-weight:500;display:inline-flex;align-items:center;gap:5px">
+      <span id="sync-dot" style="width:8px;height:8px;border-radius:50%;background:#2E86C1;display:inline-block;animation:pulse-green 2s infinite"></span>
       <span id="sync-text">conectando...</span>
     </span>
 
-    <button class="btn" onclick="forzarSincronizacion()" style="padding:5px 14px;font-size:11px;background:#2D5A3D;color:#fff;border-color:#2D5A3D;font-weight:600" title="Guarda y fuerza recarga en todos los dispositivos">🔄 sincronizar</button>
-    <button class="btn" style="padding:5px 12px;font-size:11px;color:#4A9E6A;border-color:#4A9E6A" onclick="guardarEstado()">💾 backup</button>
-    <button class="btn" style="padding:5px 12px;font-size:11px;color:#6A9EC4;border-color:#6A9EC4" onclick="$('cargar-inp').click()">📂 restaurar</button>
+    <button class="btn" onclick="forzarSincronizacion()" style="padding:5px 14px;font-size:11px;background:#1A5276;color:#fff;border-color:#1A5276;font-weight:600" title="Guarda y fuerza recarga en todos los dispositivos">🔄 sincronizar</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:#5DADE2;border-color:#5DADE2" onclick="guardarEstado()">💾 backup</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:#85C1E9;border-color:#85C1E9" onclick="$('cargar-inp').click()">📂 restaurar</button>
     <input type="file" id="cargar-inp" accept=".json" style="display:none" onchange="cargarEstado(event)">
-    <button class="btn" style="padding:5px 12px;font-size:11px;color:var(--bg);border-color:#555" onclick="exportarCSV()">↓ CSV</button>
-    <button class="btn" style="padding:5px 12px;font-size:11px;color:var(--bg);border-color:#555" onclick="imprimirApp()">imprimir</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:var(--bg);border-color:#4A7FB5" onclick="exportarCSV()">↓ CSV</button>
+    <button class="btn" style="padding:5px 12px;font-size:11px;color:var(--bg);border-color:#4A7FB5" onclick="imprimirApp()">imprimir</button>
   </div>
 </div>
 
@@ -834,33 +834,33 @@ tr.acc-subtotal td {
       <div class="section">
         <div class="section-head">◈ Tabla de Cuotas por Nivel — con actualización mensual inline <span id="resp-cuotas-wrap"></span></div>
         <div style="padding:10px 12px;border-bottom:1px solid var(--border);background:var(--warn-lt);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:11px;color:var(--warn);font-weight:500">% Actualización por mes →</span>
+          <span style="font-size:11px;color:var(--info);font-weight:500">% Actualización por mes →</span>
           <span style="font-size:11px;color:var(--text3)">Mar</span>
-          <input type="number" id="aumMar" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumMar" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Abr</span>
-          <input type="number" id="aumAbr" value="11" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumAbr" value="11" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">May</span>
-          <input type="number" id="aumMay" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumMay" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Jun</span>
-          <input type="number" id="aumJun" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumJun" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Jul</span>
-          <input type="number" id="aumJul" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumJul" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Ago</span>
-          <input type="number" id="aumAgo" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumAgo" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Sep</span>
-          <input type="number" id="aumSep" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumSep" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Oct</span>
-          <input type="number" id="aumOct" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumOct" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Nov</span>
-          <input type="number" id="aumNov" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumNov" value="0" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
           <span style="font-size:11px;color:var(--text3)">Dic</span>
-          <input type="number" id="aumDic" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid #DDCB8A;border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--warn)">
+          <input type="number" id="aumDic" value="5" oninput="calcCuotas()" style="width:54px;padding:4px 6px;border:1px solid var(--border2);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace;background:white;color:var(--info)">
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr id="cuota-thead">
-                <th>Nivel</th><th class="r">Alum.</th><th class="r">Cuota Base</th><th class="r" style="color:var(--warn)">Complejo</th>
+                <th>Nivel</th><th class="r">Alum.</th><th class="r">Cuota Base</th><th class="r" style="color:var(--info)">Complejo</th>
                 <th class="r">Mar</th><th class="r">Abr</th><th class="r">May</th><th class="r">Jun</th>
                 <th class="r">Jul</th><th class="r">Ago</th><th class="r">Sep</th><th class="r">Oct</th>
                 <th class="r">Nov</th><th class="r">Dic</th><th class="r" style="background:var(--info-lt);color:var(--info)">Matrícula</th>
@@ -899,7 +899,7 @@ tr.acc-subtotal td {
         <span>Incremento general recursos:</span>
         <input type="number" id="inc-rec" value="20">
         <span>%</span>
-        <button class="btn" style="margin-left:8px;border-color:#DDCB8A;color:var(--warn);font-size:11px;padding:5px 12px" onclick="aplicarIncRec()">aplicar a todos</button>
+        <button class="btn" style="margin-left:8px;border-color:var(--border2);color:var(--info);font-size:11px;padding:5px 12px" onclick="aplicarIncRec()">aplicar a todos</button>
       </div>
       <div class="section">
         <div class="table-wrap">
@@ -933,7 +933,7 @@ tr.acc-subtotal td {
         <span style="margin-left:8px">Gastos operativos:</span>
         <input type="number" id="inc-gas" value="30">
         <span>%</span>
-        <button class="btn" style="margin-left:8px;border-color:#DDCB8A;color:var(--warn);font-size:11px;padding:5px 12px" onclick="aplicarInc()">aplicar a todos</button>
+        <button class="btn" style="margin-left:8px;border-color:var(--border2);color:var(--info);font-size:11px;padding:5px 12px" onclick="aplicarInc()">aplicar a todos</button>
       </div>
 
       <div class="section">
@@ -1281,8 +1281,8 @@ function renderCuotaBody() {
           onblur="cerrarCuotaBase(${i})" oninput="niveles[${i}].cu=+this.value;calcCuotas()">
       </td>
       <td class="r" style="white-space:nowrap">
-        <span id="nv-cc-disp-${i}" style="cursor:text;font-size:12.5px;color:var(--warn)" onclick="editCuotaComplejo(${i})">${fmt(nv.cc||0)}</span>
-        <input type="number" id="nv-cc-${i}" value="${nv.cc||0}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid #DDCB8A;border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--warn)"
+        <span id="nv-cc-disp-${i}" style="cursor:text;font-size:12.5px;color:var(--info)" onclick="editCuotaComplejo(${i})">${fmt(nv.cc||0)}</span>
+        <input type="number" id="nv-cc-${i}" value="${nv.cc||0}" style="display:none;width:110px;text-align:right;padding:3px 6px;border:1px solid var(--border2);border-radius:4px;font-family:'DM Mono',monospace;font-size:12.5px;color:var(--info)"
           onblur="cerrarCuotaComplejo(${i})" oninput="niveles[${i}].cc=+this.value;calcCuotas()">
       </td>
       ${[3,4,5,6,7,8,9,10,11,12].map(m => `<td class="r muted" id="nv-m${m}-${i}" style="font-size:12px"></td>`).join('')}
@@ -1554,7 +1554,7 @@ function renderRecRow(r, gid, gi, ri) {
     <td class="r">${refStr}</td>
     <td class="r">
       <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
-        <input type="number" id="${r.id}-pct" placeholder="—" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctRec('${r.id}',${ref2025})">
+        <input type="number" id="${r.id}-pct" placeholder="—" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--info)" oninput="aplicarPctRec('${r.id}',${ref2025})">
         <span style="font-size:11px;color:var(--text3)">%</span>
       </div>
     </td>
@@ -1589,7 +1589,7 @@ function renderRecExtraRow(r, gid, gi, ei) {
     </td>
     <td class="r">
       <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
-        <input type="number" id="${r.id}-pct" placeholder="—" style="width:55px;text-align:right;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctRec('${r.id}',${ref2025})">
+        <input type="number" id="${r.id}-pct" placeholder="—" style="width:55px;text-align:right;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--info)" oninput="aplicarPctRec('${r.id}',${ref2025})">
         <span style="font-size:11px;color:var(--text3)">%</span>
       </div>
     </td>
@@ -1911,7 +1911,7 @@ function initEgresos() {
           </td>
           <td class="r">
             <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
-              <input type="number" id="cajagen-pct" value="4" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="recalcCajaGen()">
+              <input type="number" id="cajagen-pct" value="4" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--info)" oninput="recalcCajaGen()">
               <span style="font-size:11px;color:var(--text3)">%</span>
             </div>
           </td>
@@ -1977,7 +1977,7 @@ function initEgresos() {
     if (!noAdd) {
       html += `<tr class="acc-item hidden" data-group="${gid}">
         <td colspan="5" style="padding:4px 16px">
-          <button onclick="event.stopPropagation();addEgrExtra(${gi})" style="font-size:11px;color:var(--warn);background:none;border:1px dashed var(--warn);border-radius:4px;padding:3px 10px;cursor:pointer">+ agregar cuenta</button>
+          <button onclick="event.stopPropagation();addEgrExtra(${gi})" style="font-size:11px;color:var(--info);background:none;border:1px dashed var(--info);border-radius:4px;padding:3px 10px;cursor:pointer">+ agregar cuenta</button>
         </td>
       </tr>`;
     }
@@ -2004,7 +2004,7 @@ function renderEgrExtraRow(e, gid, gi, ei) {
     </td>
     <td class="r">
       <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
-        <input type="number" id="${e.id}-pct" placeholder="—" style="width:55px;text-align:right;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctIndiv('${e.id}')">
+        <input type="number" id="${e.id}-pct" placeholder="—" style="width:55px;text-align:right;padding:3px 5px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--info)" oninput="aplicarPctIndiv('${e.id}')">
         <span style="font-size:11px;color:var(--text3)">%</span>
       </div>
     </td>
@@ -2466,7 +2466,7 @@ function renderEgrNormalRow(e, gid, gi) {
         </td>
         <td class="r">
           <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end">
-            <input type="number" id="${e.id}-pct" placeholder="—" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--warn)" oninput="aplicarPctIndiv('${e.id}')">
+            <input type="number" id="${e.id}-pct" placeholder="—" style="width:60px;text-align:right;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;background:var(--bg);color:var(--info)" oninput="aplicarPctIndiv('${e.id}')">
             <span style="font-size:11px;color:var(--text3)">%</span>
           </div>
         </td>
@@ -2605,8 +2605,13 @@ function calcResumen() {
       if (r.auto === 'matr') return s + getMatriculas();
       if (r.auto === 'beca') return s - calcCuotas().becaTotal;
       if (r.total)           return s + num(r.id+'-m');
-      return s + num(r.id+'-m') * num(r.id+'-ms');
-    }, 0) + (recExtras[gi]||[]).reduce((s,r) => s + num(r.id+'-m') * num(r.id+'-ms'), 0);
+      const totInp = $(r.id+'-tot-inp');
+      return s + (totInp ? parseFloat(totInp.value)||0 : num(r.id+'-m') * num(r.id+'-ms'));
+    }, 0) + (recExtras[gi]||[]).reduce((s,r) => {
+      if (uniIngIds.has(r.id)) return s; // extras de unidades también se excluyen
+      const totInp = $(r.id+'-tot-inp');
+      return s + (totInp ? parseFloat(totInp.value)||0 : num(r.id+'-m') * num(r.id+'-ms'));
+    }, 0);
 
     if (groupVal === 0) return;
 
@@ -2618,11 +2623,14 @@ function calcResumen() {
       else if (r.auto === 'matr') v = getMatriculas();
       else if (r.auto === 'beca') v = -calcCuotas().becaTotal;
       else if (r.total) v = num(r.id+'-m');
-      else v = num(r.id+'-m') * num(r.id+'-ms');
+      else { const totInp=$(r.id+'-tot-inp'); v = totInp ? parseFloat(totInp.value)||0 : num(r.id+'-m')*num(r.id+'-ms'); }
       html += lineDetail(r.cod, r.label, v, v < 0);
     });
     (recExtras[gi]||[]).forEach(r => {
-      html += lineDetail(r.cod||'—', r.label, num(r.id+'-m') * num(r.id+'-ms'));
+      if (uniIngIds.has(r.id)) return; // omitir extras de unidades
+      const totInp = $(r.id+'-tot-inp');
+      const v = totInp ? parseFloat(totInp.value)||0 : num(r.id+'-m') * num(r.id+'-ms');
+      html += lineDetail(r.cod||'—', r.label, v);
     });
     html += lineClose();
   });
@@ -2839,13 +2847,17 @@ function calcPE() {
   recGroups.forEach((g,gi) => {
     g.items.forEach(r => {
       if (uniIngIds.has(r.id)) return;
-      if (r.auto === 'mens')  ingColegio += cuotaRes.mensNeto; // neto de becas
+      if (r.auto === 'mens')  ingColegio += cuotaRes.mensNeto;
       else if (r.auto === 'matr') ingColegio += cuotaRes.matriculas;
-      else if (r.auto === 'beca') return; // ya descontado en mensNeto
+      else if (r.auto === 'beca') return;
       else if (r.total) ingColegio += num(r.id+'-m');
-      else ingColegio += num(r.id+'-m') * num(r.id+'-ms');
+      else { const totInp=$(r.id+'-tot-inp'); ingColegio += totInp ? parseFloat(totInp.value)||0 : num(r.id+'-m')*num(r.id+'-ms'); }
     });
-    (recExtras[gi]||[]).forEach(r => ingColegio += num(r.id+'-m') * num(r.id+'-ms'));
+    (recExtras[gi]||[]).forEach(r => {
+      if (uniIngIds.has(r.id)) return; // excluir extras de unidades
+      const totInp=$(r.id+'-tot-inp');
+      ingColegio += totInp ? parseFloat(totInp.value)||0 : num(r.id+'-m')*num(r.id+'-ms');
+    });
   });
 
   // ── Sin Unidades ──
@@ -2937,9 +2949,9 @@ function calcPE() {
     data: {
       labels: lbls.map(l => l.toLocaleString('es-AR')),
       datasets: [
-        { label: 'Resultado Sin Unidades', data: resSin, borderColor: '#C45B4A', backgroundColor: 'rgba(196,91,74,0.07)', tension: 0.1, pointRadius: 2, fill: true },
-        { label: 'Resultado Con Unidades', data: resCon, borderColor: '#4A9E6A', backgroundColor: 'rgba(74,158,106,0.07)', tension: 0.1, pointRadius: 2, fill: true },
-        { label: 'Resultado = 0 (PE)', data: lbls.map(()=>0), borderColor:'#555', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false }
+        { label: 'Resultado Sin Unidades', data: resSin, borderColor: '#2E86C1', backgroundColor: 'rgba(46,134,193,0.08)', tension: 0.1, pointRadius: 2, fill: true },
+        { label: 'Resultado Con Unidades', data: resCon, borderColor: '#1A5276', backgroundColor: 'rgba(26,82,118,0.08)', tension: 0.1, pointRadius: 2, fill: true },
+        { label: 'Resultado = 0 (PE)', data: lbls.map(()=>0), borderColor:'#4A7FB5', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false }
       ]
     },
     options: {
@@ -2953,7 +2965,7 @@ function calcPE() {
       },
       scales: {
         y: { ticks: { callback: v => '$'+(v/1000000).toFixed(0)+'M', font:{family:'DM Mono',size:10} },
-             grid: { color: ctx => ctx.tick.value===0?'#555':'#eee', lineWidth: ctx=>ctx.tick.value===0?2:1 } },
+             grid: { color: ctx => ctx.tick.value===0?'#4A7FB5':'#dde3ee', lineWidth: ctx=>ctx.tick.value===0?2:1 } },
         x: { title:{display:true,text:'Cantidad de alumnos',font:{family:'DM Mono',size:10}},
              ticks:{font:{family:'DM Mono',size:10}} }
       }
@@ -3138,16 +3150,16 @@ function setSyncStatus(state) {
   const box = document.getElementById('sync-status');
   if (!dot || !txt || !box) return;
   if (state === 'live') {
-    box.style.background = '#e8f5e9'; box.style.color = '#2e7d32';
-    dot.style.background = '#4caf50'; dot.style.animation = 'pulse-green 2s infinite';
+    box.style.background = '#D6E8F7'; box.style.color = '#1A5276';
+    dot.style.background = '#2E86C1'; dot.style.animation = 'pulse-green 2s infinite';
     txt.textContent = 'en vivo';
   } else if (state === 'saving') {
     box.style.background = '#fff8e1'; box.style.color = '#f57f17';
     dot.style.background = '#ffa726'; dot.style.animation = 'pulse-orange 1s infinite';
     txt.textContent = 'guardando...';
   } else if (state === 'connecting') {
-    box.style.background = 'var(--surface2)'; box.style.color = 'var(--text3)';
-    dot.style.background = '#aaa'; dot.style.animation = 'pulse-green 2s infinite';
+    box.style.background = '#EBF4FB'; box.style.color = '#4A7FB5';
+    dot.style.background = '#4A7FB5'; dot.style.animation = 'pulse-green 2s infinite';
     txt.textContent = 'conectando...';
   } else if (state === 'error') {
     box.style.background = '#ffebee'; box.style.color = '#c62828';
@@ -3475,6 +3487,16 @@ initUnidadesER();
 initResponsables();
 renderInv();
 updateAll();
+
+// ─── ESTADO INICIAL — datos al 31/03/2026 ───
+// Se aplica antes de que Firebase cargue, para que el HTML ya muestre datos
+// si no hay conexión o mientras conecta
+const _estadoInicial = {"v":2,"ts":"2026-03-31T14:54:20.511Z","_htmlVersion":1,"inputs":{"nombre-colegio-inp":"Colegio Ssmo. Rosario","resp-activo-inp":"Adm. Juan Pedraza","ac-caja":"39221356","ac-me":"4705075","ac-vc":"7444339","ac-fr":"0","ac-tc":"32242415","ac-rapi":"0","ac-banco":"31202843","ac-fci":"227455695","ac-apest":"50343853","ac-otras":"0","resp-pasivo-inp":"Adm. Juan Salas","pc-sue":"84575674","pc-apo":"19320082","pc-ret":"1485511","pc-hon":"2017120","pc-fdt":"2813761","pc-rpe":"3050040.62","pc-pro":"0","pc-eco":"3144625","resp-cuotas-inp":"Cdr. Soria Luis","aumMar":"0","aumAbr":"05.36","aumMay":"0","aumJun":"6.7","aumJul":"0","aumAgo":"0","aumSep":"5.06","aumOct":"0","aumNov":"0","aumDic":"4.25","nv-al-0":"29","nv-cu-0":"60000","nv-cc-0":"0","nv-al-1":"37","nv-cu-1":"83000","nv-cc-1":"0","nv-al-2":"271","nv-cu-2":"110000","nv-cc-2":"0","nv-al-3":"313","nv-cu-3":"107000","nv-cc-3":"0","nv-al-4":"497","nv-cu-4":"111000","nv-cc-4":"0","pBeca":"3","resp-recursos-inp":"","inc-rec":"20","r-apest-pct":"","r-apest-tot-inp":"669971358","r-apest-m":"669971358","r-apest-ms":"1","r-mens-m":"138741520","r-matr-m":"0","r-beca-m":"0","r-incob-pct":"","r-incob-tot-inp":"97980","r-incob-m":"97980","r-incob-ms":"1","r-reint-pct":"26.1","r-reint-tot-inp":"25168425","r-reint-m":"25168425","r-reint-ms":"1","r-seguros-pct":"26.1","r-seguros-tot-inp":"165861","r-seguros-m":"165861","r-seguros-ms":"1","r-act-edu-pct":"26.1","r-act-edu-tot-inp":"11703972","r-act-edu-m":"11703972","r-act-edu-ms":"1","r-dep-pct":"26.1","r-dep-tot-inp":"1675869","r-dep-m":"1675869","r-dep-ms":"1","r-ext-hor-pct":"26.1","r-ext-hor-tot-inp":"2542799","r-ext-hor-m":"2542799","r-ext-hor-ms":"1","r-mat-ini-pct":"26.1","r-mat-ini-tot-inp":"567450","r-mat-ini-m":"567450","r-mat-ini-ms":"1","r-otros-a1-pct":"26.1","r-otros-a1-tot-inp":"3393477","r-otros-a1-m":"3393477","r-otros-a1-ms":"1","r-ingles-pct":"26.1","r-ingles-tot-inp":"6477068","r-ingles-m":"6477068","r-ingles-ms":"1","r-uni-ing-pct":"30","r-uni-ing-tot-inp":"91178646","r-uni-ing-m":"91178646","r-uni-ing-ms":"1","r-lib-ing-pct":"","r-lib-ing-tot-inp":"15000000","r-lib-ing-m":"15000000","r-lib-ing-ms":"1","r-tarj-pct":"26.1","r-tarj-tot-inp":"252200","r-tarj-m":"252200","r-tarj-ms":"1","r-can-ing-pct":"-100","r-can-ing-tot-inp":"0","r-can-ing-m":"0","r-can-ing-ms":"1","r-pat-pct":"-100","r-pat-tot-inp":"0","r-pat-m":"0","r-pat-ms":"1","r-eventos-pct":"26.1","r-eventos-tot-inp":"1361880","r-eventos-m":"1361880","r-eventos-ms":"1","r-alq-pct":"26.1","r-alq-tot-inp":"1201169","r-alq-m":"1201169","r-alq-ms":"1","r-est-ing-pct":"26.1","r-est-ing-tot-inp":"294942","r-est-ing-m":"294942","r-est-ing-ms":"1","cx-1-ref-inp":"0","cx-1-pct":"","cx-1-tot-inp":"90000000","cx-1-m":"90000000","cx-1-ms":"1","cx-2-ref-inp":"0","cx-2-pct":"","cx-2-tot-inp":"35000000","cx-2-m":"35000000","cx-2-ms":"1","r-int-pct":"22","r-int-tot-inp":"48217937","r-int-m":"48217937","r-int-ms":"1","r-mora-pct":"26.1","r-mora-tot-inp":"27322953","r-mora-m":"27322953","r-mora-ms":"1","r-sob-caja-pct":"","r-sob-caja-tot-inp":"0","r-sob-caja-m":"0","r-sob-caja-ms":"1","resp-egresos-inp":"","inc-sal":"25","inc-gas":"30","e-sue-col":"1168281985","e-sue-est":"0","e-sue-can":"23248070","e-sue-uni":"20239003","e-cc-col":"157718068","e-cc-est":"0","e-cc-can":"3138489","e-cc-uni":"2732265","e-hab-col":"649953844","e-hab-est":"0","e-hab-can":"0","e-hab-uni":"0","e-asig-col":"17699227","e-asig-est":"0","e-asig-can":"0","e-asig-uni":"0","e-indem-col":"15000000","e-indem-est":"0","e-indem-can":"0","e-indem-uni":"0","e-cap-col":"5000000","e-cap-est":"0","e-cap-can":"0","e-cap-uni":"0","e-uni-ropa-col":"2500000","e-uni-ropa-est":"0","e-uni-ropa-can":"0","e-uni-ropa-uni":"0","e-otros-p-col":"8000000","e-otros-p-est":"0","e-otros-p-can":"0","e-otros-p-uni":"0","e-com-herm-pct":"26.1","e-com-herm":"24681847","e-hon-pct":"26.1","e-hon":"11592247","e-seg-pct":"26.1","e-seg":"24161392","e-lug-pct":"26.1","e-lug":"30360596","e-tel-pct":"26.1","e-tel":"1957006","e-rep-ed-pct":"","e-rep-ed":"40792252","e-rep-mbl-pct":"26.1","e-rep-mbl":"74248","e-rep-maq-pct":"","e-rep-maq":"0","e-rep-aut-pct":"","e-rep-aut":"0","e-limp-pct":"26.1","e-limp":"4935137","e-imp-pct":"26.1","e-imp":"0","e-com-pct":"","e-com":"24270774","e-secu-pct":"26.1","e-secu":"750295","e-lib-pct":"26.1","e-lib":"4498239","e-it-pct":"26.1","e-it":"17552390","e-prensa-pct":"26.1","e-prensa":"1028803","e-sus-pct":"26.1","e-sus":"1184166","e-via-pct":"26.1","e-via":"7512637","e-enc-pct":"26.1","e-enc":"13728135","e-comb-pct":"26.1","e-comb":"5769341","e-mat-did-pct":"26.1","e-mat-did":"7511464","e-banco-pct":"26.1","e-banco":"6789016","e-dif-caja-pct":"26.1","e-dif-caja":"0","e-act-edu-pct":"","e-act-edu":"5746452","e-don-pct":"26.1","e-don":"88901","e-uni-gasto-pct":"26.1","e-uni-gasto":"62632353","e-est-gasto-pct":"","e-est-gasto":"0","e-can-gasto-pct":"2800","e-can-gasto":"64451601","e-lib-gasto-pct":"26.1","e-lib-gasto":"38019517","e-act-esp-pct":"","e-act-esp":"0","e-alq-pct":"69","e-alq":"11661000","e-culto-pct":"","e-culto":"856613","e-caja-g-ref-inp":"50654353","cajagen-pct":"4","e-caja-g":"92100163","e-dif-cot-pct":"","e-dif-cot":"0","e-int-mora-pct":"","e-int-mora":"2155","resp-inversiones-inp":"","inv-pu-inp-0":"157838","inv-pu-inp-1":"724113","inv-pu-inp-2":"1357714","inv-pu-inp-3":"724113","inv-pu-inp-4":"0","inv-pu-inp-5":"0","inv-pu-inp-6":"479725","inv-pu-inp-7":"0","inv-pu-inp-8":"0","inv-pu-inp-9":"1044000","inv-pu-inp-10":"0","inv-pu-inp-11":"0","inv-pu-inp-12":"33000","inv-pu-inp-13":"0","inv-pu-inp-14":"3000000","inv-pu-inp-15":"0","inv-pu-inp-16":"0","inv-pu-inp-17":"563922","inv-pu-inp-18":"0","inv-pu-inp-19":"0","inv-pu-inp-20":"2000000","inv-pu-inp-21":"3000000","inv-pu-inp-22":"0"},"niveles":[{"n":"Jardín de 3 y 4","al":29,"cu":60000,"cc":0},{"n":"Jardín de 5","al":37,"cu":83000,"cc":0},{"n":"Primario 1°a 3°","al":271,"cu":110000,"cc":0},{"n":"Primario 4°a 6°","al":313,"cu":107000,"cc":0},{"n":"Secundario","al":497,"cu":111000,"cc":0}],"invItems":[{"pu":157838,"qty":2,"desc":"Sillon de Oficina / Administracion","cat":"MS. UTS."},{"desc":"Aire acondicionado cantina ","qty":1,"pu":724113,"cat":""},{"qty":1,"pu":1357714,"desc":"Aire acondicionado Sala de reuniones ","cat":""},{"cat":"","pu":724113,"qty":1,"desc":"Aire de acondicionado preceptoria "},{"cat":"","qty":1,"pu":0,"desc":"Proyector Sala "},{"desc":"Pizarron Sala ","qty":1,"pu":0,"cat":""},{"desc":"Impresora DOE","qty":1,"pu":479725,"cat":""},{"cat":"","qty":1,"pu":0,"desc":"Impresora Administración "},{"pu":0,"qty":1,"desc":"Computadoras Actualización ","cat":""},{"cat":"","desc":"Notebook- RL ","pu":1044000,"qty":1},{"cat":"","qty":1,"pu":0,"desc":"Sillas Administración "},{"cat":"","desc":"Cesped sintético Nivel Inicial","pu":0,"qty":1},{"qty":80,"pu":33000,"desc":"Vereda (Belgrano) mosaicos m2","cat":""},{"cat":"","desc":"Vereda (mano de obra)","pu":0,"qty":1},{"cat":"","pu":3000000,"qty":1,"desc":"Cielorraso SUM "},{"cat":"","pu":0,"qty":1,"desc":"Pintura Sala de reuniones "},{"cat":"","desc":"Herreria Sala de reuniones","pu":0,"qty":1},{"desc":"Freezer Cantina ","qty":1,"pu":563922,"cat":""},{"cat":"","qty":1,"pu":0,"desc":"Capacitación "},{"desc":"Mantenimiento techos planta alta","qty":1,"pu":0,"cat":""},{"desc":"Herreria nivel inicial ","pu":2000000,"qty":1,"cat":""},{"cat":"","pu":3000000,"qty":1,"desc":"Cambio de ventanas patio central "},{"cat":"","desc":"Nueva inversión","pu":0,"qty":1}],"nombreColegio":"Colegio Ssmo. Rosario","notas":"Presupuesto confeccionado: Marzo 2026\nPeríodo: 01/03/2026 al 28/02/2027\nSistema: Devengado\n\nNota – Cuota, Matrícula y Becas 2026\nPara la confección del presupuesto 2026, los valores de cuotas y matrícula se determinaron en función de la evolución de los costos salariales docentes, conforme a los incrementos establecidos en la normativa vigente.\n\nSe aplica una actualización inicial en el mes de marzo del 8,43%, y posteriormente un esquema de actualización escalonada en los meses de:\nAbril (5,30%)\nJunio (6,70%)\nSeptiembre (5,06%)\nDiciembre (4,25%)\n\nLa matrícula se calcula como equivalente a dos cuotas del mes de diciembre, en línea con el criterio institucional.\nAsimismo, se contempla un nivel de becas y descuentos del 3% sobre el total de ingresos por cuotas, incorporado como variable de ajuste en la proyección de ingresos.\n\nNota – Aportes Estatales 2026\nEl monto total anual proyectado de Aportes Estatales (Cuenta 411001) se determina a partir del valor base del mes de noviembre, considerado el más representativo, sobre el cual se aplican actualizaciones sucesivas en función de la evolución salarial docente.\n\nSe aplica una actualización inicial en marzo del 8,43%, y posteriormente incrementos en abril (5,30%), junio (6,70%), septiembre (5,06%) y diciembre (4,25%), en forma acumulativa sobre el valor vigente de cada período.\n\nEl total anual surge de la sumatoria de los aportes mensuales proyectados (marzo 2026 a febrero 2027), más la incorporación del Sueldo Anual Complementario (SAC) correspondiente a los meses de junio y diciembre, calculado sobre los valores actualizados de dichos períodos.\n\nMonto total anual proyectado 2026: $669.971.358\n\nEste criterio permite reflejar de manera razonable la evolución del financiamiento estatal, alineando los ingresos con la dinámica de los costos salariales.","uerVals":{"uer-uni-sue":0,"uer-can-sue":0,"uer-alq-sue":0},"subs511":{"e-sue-col":1168281985,"e-sue-est":0,"e-sue-can":23248070,"e-sue-uni":20239003,"e-cc-col":157718068,"e-cc-est":0,"e-cc-can":3138489,"e-cc-uni":2732265,"e-hab-col":649953844,"e-hab-est":0,"e-hab-can":0,"e-hab-uni":0,"e-asig-col":17699227,"e-asig-est":0,"e-asig-can":0,"e-asig-uni":0,"e-indem-col":15000000,"e-indem-est":0,"e-indem-can":0,"e-indem-uni":0,"e-cap-col":5000000,"e-cap-est":0,"e-cap-can":0,"e-cap-uni":0,"e-uni-ropa-col":2500000,"e-uni-ropa-est":0,"e-uni-ropa-can":0,"e-uni-ropa-uni":0,"e-otros-p-col":8000000,"e-otros-p-est":0,"e-otros-p-can":0,"e-otros-p-uni":0},"responsables":{"resp-activo":"Adm. Juan Pedraza","resp-pasivo":"Adm. Juan Salas","resp-cuotas":"Cdr. Soria Luis"},"recExtras":{"0":[],"1":[],"2":[],"3":[{"id":"cx-1","cod":"414014","men":0,"ms":12,"unidad":"can","ref":0,"label":"Vta. Cantina"},{"men":0,"ms":12,"label":"Vta. Libros","unidad":"uni","cod":"414016","id":"cx-2"}],"4":[],"5":[]},"egrExtras":{"0":[],"1":[],"2":[],"3":[],"4":[],"5":[],"6":[]},"_customSeq":3,"egrLabels":{"e-sue":{"cod":"511001","label":"Sueldos"},"e-cc":{"cod":"511002","label":"Cargas Sociales"},"e-hab":{"cod":"511003","label":"Haberes Sin Aportes"},"e-asig":{"cod":"511012","label":"Asignaciones Familiares"},"e-indem":{"cod":"511005","label":"Indemnización"},"e-cap":{"cod":"511006","label":"Capacitación"},"e-uni-ropa":{"cod":"511007","label":"Uniformes / Ropa de Trabajo"},"e-otros-p":{"cod":"511008","label":"Otros Gastos en Personal"},"e-com-herm":{"cod":"511009","label":"Comunidad Hermanas"},"e-hon":{"cod":"512001","label":"Honorarios"},"e-seg":{"cod":"512002","label":"Seguros"},"e-lug":{"cod":"512003","label":"Luz, Agua, Gas"},"e-tel":{"cod":"512004","label":"Teléfono y Comunicaciones"},"e-rep-ed":{"cod":"512005","label":"Repar. y Conserv. Edificios"},"e-rep-mbl":{"cod":"512006","label":"Repar. y Conserv. Muebles"},"e-rep-maq":{"cod":"512007","label":"Repar. y Conserv. Maquinarias"},"e-rep-aut":{"cod":"512008","label":"Repar. y Conserv. Automotores"},"e-limp":{"cod":"512009","label":"Servicios y Art. de Limpieza"},"e-imp":{"cod":"512010","label":"Impuestos y Tasas"},"e-com":{"cod":"512011","label":"Comisiones"},"e-secu":{"cod":"512012","label":"Seguridad y Emergencias Médicas"},"e-lib":{"cod":"513001","label":"Librería e Impresiones"},"e-it":{"cod":"513002","label":"Informática"},"e-prensa":{"cod":"513003","label":"Prensa y Difusión"},"e-sus":{"cod":"513004","label":"Suscripciones"},"e-via":{"cod":"513005","label":"Viáticos, Agasajos y Regalos"},"e-enc":{"cod":"513006","label":"Encuentros y Asambleas"},"e-comb":{"cod":"513007","label":"Movilidad y Combustible"},"e-mat-did":{"cod":"513008","label":"Material Didáctico y Refrigerios Alumnos"},"e-banco":{"cod":"513009","label":"Gastos Bancarios"},"e-dif-caja":{"cod":"513011","label":"Diferencias de Caja"},"e-act-edu":{"cod":"513013","label":"Actividades y Salidas Educativas Egreso"},"e-don":{"cod":"513014","label":"Donación Egreso"},"e-uni-gasto":{"cod":"514001","label":"Gasto Venta Uniformes"},"e-est-gasto":{"cod":"514002","label":"Gasto Estacionamiento"},"e-can-gasto":{"cod":"514003","label":"Gasto Cantina"},"e-lib-gasto":{"cod":"514004","label":"Gasto Librería"},"e-act-esp":{"cod":"514006","label":"Gastos de Actividades Especiales"},"e-alq":{"cod":"516001","label":"Alquileres y Expensas"},"e-culto":{"cod":"516004","label":"Culto"},"e-caja-g":{"cod":"517001","label":"Aportes a la Caja Común (auto · % sobre base)"},"e-dif-cot":{"cod":"519302","label":"Diferencias de Cotizaciones"},"e-int-mora":{"cod":"519304","label":"Intereses Moratorios y Multas"}},"refs511":{"e-sue":701701915,"e-cc":90545839,"e-hab":437617285,"e-asig":8515533,"e-indem":720623,"e-cap":1499500,"e-uni-ropa":1330982,"e-otros-p":4698661},"recUnidades":{"r-uni-ing":"uni","r-lib-ing":"uni","r-can-ing":"can","r-alq":"alq","r-est-ing":"alq"},"egrUnidades":{"e-uni-gasto":"uni","e-can-gasto":"can","e-lib-gasto":"uni"},"recTotales":{"r-apest":669971358,"r-incob":97980,"r-reint":25168425,"r-seguros":165861,"r-act-edu":11703972,"r-dep":1675869,"r-ext-hor":2542799,"r-mat-ini":567450,"r-otros-a1":3393477,"r-ingles":6477068,"r-uni-ing":91178646,"r-lib-ing":15000000,"r-tarj":252200,"r-can-ing":0,"r-pat":0,"r-eventos":1361880,"r-alq":1201169,"r-est-ing":294942,"r-int":48217937,"r-mora":27322953,"r-sob-caja":0}};
+
+// Aplicar estado inicial inmediatamente (antes de Firebase)
+window._applying = true;
+aplicarEstado(_estadoInicial);
+setTimeout(() => { window._applying = false; }, 1200);
 
 // El onSnapshot de Firebase se encarga de la carga inicial y del tiempo real
 // Solo necesitamos marcar _appReady después de que el DOM esté listo
